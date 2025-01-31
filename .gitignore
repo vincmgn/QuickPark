@@ -8,3 +8,10 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+# Variable environments
+.env
+
+# fichiers lock
+composer.lock
+symfony.lock
