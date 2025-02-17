@@ -8,6 +8,8 @@ FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 # https://docs.docker.com/compose/compose-file/#target
 
 
+
+
 # Base FrankenPHP image
 FROM frankenphp_upstream AS frankenphp_base
 
