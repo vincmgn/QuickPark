@@ -3,8 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Parking;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Parking>
@@ -15,6 +16,16 @@ class ParkingRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Parking::class);
     }
+
+    public function findEnabledParkingsQuery(): Query
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.isEnabled = :enabled')
+            ->setParameter('enabled', true)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery();
+    }
+
 
     //    /**
     //     * @return Parking[] Returns an array of Parking objects
