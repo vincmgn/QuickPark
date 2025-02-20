@@ -17,6 +17,9 @@ class Parking
     #[ORM\Column]
     private ?int $id = null;
 
+    /**
+     * @var string
+     */
     #[ORM\Column(type: 'point')]
     private $location;
 

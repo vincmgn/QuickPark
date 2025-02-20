@@ -1,0 +1,9 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: QuickPark_API
+            description: This is the API documentation for QuickPark, a parking management system. It provides endpoints for managing parking spaces, reservations, and user accounts.
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
