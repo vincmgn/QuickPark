@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: GenderRepository::class)]
 class Gender
 {
-    // use Traits\StatisticsPropertiesTrait;
+    use Traits\StatisticsPropertiesTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
