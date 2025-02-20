@@ -18,22 +18,22 @@ class UserFixtures extends Fixture
     }
 
     public function load(ObjectManager $manager): void
-    { {
-            $faker = Factory::create();
+    {
+        $faker = Factory::create();
 
-            // public user
-            $publicUser = new User();
-            $publicUser->setUuid($faker->uuid);
-            $publicUser->setRoles(['ROLE_USER']);
-            $publicUser->setPassword($this->userPasswordHasher->hashPassword($publicUser, 'password'));
-            $manager->persist($publicUser);
+        // public user
+        $publicUser = new User();
+        $publicUser->setRoles(['ROLE_USER']);
+        $publicUser->setPassword($this->userPasswordHasher->hashPassword($publicUser, 'password'));
+        echo $publicUser->getUuid();
+        $manager->persist($publicUser);
 
-            // admin user
-            $adminUser = new User();
-            $adminUser->setUuid($faker->uuid);
-            $adminUser->setRoles(['ROLE_ADMIN']);
-            $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'password'));
-            $manager->persist($adminUser);
-        }
+        // admin user
+        $adminUser = new User();
+        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'password'));
+        $manager->persist($adminUser);
+
+        $manager->flush();
     }
 }
