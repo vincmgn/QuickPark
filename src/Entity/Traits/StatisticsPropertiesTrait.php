@@ -4,6 +4,8 @@ namespace App\Entity\Traits;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Traits\DataStatus;
+use App\DBAL\Types\DataStatusType;
 
 trait StatisticsPropertiesTrait
 {
@@ -13,18 +15,17 @@ trait StatisticsPropertiesTrait
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(length: 24)]
-    private ?string $dataStatus = null;
+    #[ORM\Column(type: DataStatusType::DATASTATUS, options: ['default' => 'active'])]
+    private DataStatus $dataStatus = DataStatus::ACTIVE;
 
-    public function getDataStatus(): ?string
+    public function getDataStatus(): DataStatus
     {
         return $this->dataStatus;
     }
 
-    public function setDataStatus(string $dataStatus): static
+    public function setDataStatus(DataStatus $dataStatus): static
     {
         $this->dataStatus = $dataStatus;
-
         return $this;
     }
 
@@ -50,32 +51,6 @@ trait StatisticsPropertiesTrait
     public function setUpdatedAt(\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(string $createdBy): static
-    {
-        if (is_null($this->createdBy)) {
-            $this->createdBy = $createdBy;
-        }
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
-
-    public function setUpdatedBy(string $updatedBy): static
-    {
-        $this->updatedBy = $updatedBy;
 
         return $this;
     }
