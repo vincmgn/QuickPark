@@ -14,22 +14,16 @@ trait StatisticsPropertiesTrait
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(length: 24)]
-    private ?string $status = null;
+    private ?string $dataStatus = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $createdBy = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $updatedBy = null;
-
-    public function getStatus(): ?string
+    public function getDataStatus(): ?string
     {
-        return $this->status;
+        return $this->dataStatus;
     }
 
-    public function setStatus(string $status): static
+    public function setDataStatus(string $dataStatus): static
     {
-        $this->status = $status;
+        $this->dataStatus = $dataStatus;
 
         return $this;
     }
