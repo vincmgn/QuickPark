@@ -60,6 +60,7 @@
             "config/routes/gesdinet_jwt_refresh_token.yaml",
             "src/Entity/RefreshToken.php"
         ]
+    },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.6.1"
     },
