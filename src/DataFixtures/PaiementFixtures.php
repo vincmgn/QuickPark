@@ -1,10 +1,11 @@
 <?php
 
-use App\DataFixtures\CreditCardFixtures;
-use Faker\Factory;
+namespace App\DataFixtures;
+
 use App\Entity\Booking;
+use Faker\Factory;
 use App\Entity\Paiement;
-use App\DataFixtures\StatusFixtures;
+use App\Entity\Traits\DataStatus;
 use App\Repository\StatusRepository;
 use App\Repository\BookingRepository;
 use App\Repository\CreditCardRepository;
@@ -34,7 +35,7 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
 
         for ($i = 0; $i < 10; $i++) {
             $randomStatus = $statuses[array_rand($statuses)];
-            $randomBooking = $bookings[array_rand($bookings)];
+            $randomBooking = $randomBooking = $this->getReference('booking_' . $i, Booking::class);
             $randomCreditCard = ($i % 2 == 0) ? $creditCards[array_rand($creditCards)] : null;
 
             $paiement = new Paiement();
@@ -42,14 +43,17 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
             $paiement->setBooking($randomBooking);
             $paiement->setTotalPrice($faker->randomFloat(2, 0, 100));
             $paiement->setCreditCard($randomCreditCard);
-            if($randomCreditCard) {
+            if ($randomCreditCard) {
                 $paiement->setCreditCardNumber($randomCreditCard->getNumber());
             } else {
                 $paiement->setCreditCardNumber($faker->creditCardNumber);
             }
 
-            $paiement->setCreatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
-            $paiement->setUpdatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
+            //! ERREUR
+            //! "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
+            // $paiement->setDataStatus(DataStatus::ACTIVE);
+            // $paiement->setCreatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
+            // $paiement->setUpdatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
 
             $manager->persist($paiement);
         }
@@ -60,8 +64,8 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             StatusFixtures::class,
-            BookingFixtures::class,
             CreditCardFixtures::class,
+            BookingFixtures::class,
         ];
     }
 }

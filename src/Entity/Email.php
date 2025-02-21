@@ -6,6 +6,7 @@ use App\Repository\EmailRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmailRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Email
 {
     use Traits\StatisticsPropertiesTrait;

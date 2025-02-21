@@ -6,9 +6,12 @@ use App\Repository\PaiementRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PaiementRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Paiement
 {
-    use Traits\StatisticsPropertiesTrait;
+    //! ERREUR
+    //!   "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
+    // use Traits\StatisticsPropertiesTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -16,6 +19,7 @@ class Paiement
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?CreditCard $creditCard = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]

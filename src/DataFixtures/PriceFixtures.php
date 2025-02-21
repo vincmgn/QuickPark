@@ -1,6 +1,7 @@
 <?php
 
-use App\DataFixtures\ParkingFixtures;
+namespace App\DataFixtures;
+
 use Faker\Factory;
 use App\Entity\Price;
 use App\Repository\ParkingRepository;
@@ -16,7 +17,6 @@ class PriceFixtures extends Fixture implements DependentFixtureInterface
     {
         $this->parkingRepository = $parkingRepository;
     }
-
 
     public function load(ObjectManager $manager): void
     {

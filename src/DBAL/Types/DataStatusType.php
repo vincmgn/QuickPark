@@ -12,6 +12,8 @@ class DataStatusType extends StringType
 
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
+
+
         return DataStatus::from($value);
     }
 

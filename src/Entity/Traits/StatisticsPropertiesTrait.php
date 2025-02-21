@@ -15,7 +15,7 @@ trait StatisticsPropertiesTrait
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(type: DataStatusType::DATASTATUS, options: ['default' => 'active'])]
+    #[ORM\Column(type: DataStatusType::DATASTATUS, options: ['default' => DataStatus::ACTIVE])]
     private DataStatus $dataStatus = DataStatus::ACTIVE;
 
     public function getDataStatus(): DataStatus
