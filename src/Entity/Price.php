@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\PriceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PriceRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
 class Price
@@ -16,9 +17,12 @@ class Price
     private ?int $id = null;
 
     #[ORM\Column]
+
+    #[Groups(["booking", "parking"])]
     private ?float $price = null;
 
     #[ORM\Column]
+    #[Groups(["parking"])]
     private ?\DateInterval $duration = null;
 
     #[ORM\ManyToOne(inversedBy: 'prices')]
@@ -26,6 +30,7 @@ class Price
     private ?Parking $parking = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["booking", "parking"])]
     private ?string $currency = null;
 
     public function getId(): ?int
