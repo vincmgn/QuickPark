@@ -18,13 +18,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-#[Route('/api/gender')]
+#[Route('/api/gender', name: 'api_gender_')]
 #[OA\Tag(name: 'Gender')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class GenderController extends AbstractController
 {
-    #[Route('s', name: 'app_gender', methods: ['GET'])]
+    #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Gender::class))]
     /**
      * Get all genders
@@ -40,7 +40,7 @@ final class GenderController extends AbstractController
         return new JsonResponse($jsonGender, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'gender_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Gender::class))]
     /**
      * Get a specific gender by ID
@@ -52,7 +52,7 @@ final class GenderController extends AbstractController
         return new JsonResponse($jsonGender, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('', name: 'gender_add', methods: ['POST'])]
+    #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Gender::class))]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
@@ -75,7 +75,7 @@ final class GenderController extends AbstractController
         return new JsonResponse($jsonGender, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/{id}', name: 'gender_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
@@ -95,7 +95,7 @@ final class GenderController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
-    #[Route('/{id}', name: 'gender_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
     /**
      * Delete a specific gender by ID
