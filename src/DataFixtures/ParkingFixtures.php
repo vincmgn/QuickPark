@@ -25,11 +25,12 @@ class ParkingFixtures extends Fixture
             $parking->setLocation($location);
 
             $parking->setIsEnabled($faker->boolean);
-            $manager->persist($parking);
 
             $now = new \DateTime();
             $parking->setCreatedAt($now);
             $parking->setUpdatedAt($now);
+
+            $manager->persist($parking);
         }
         $manager->flush();
     }
