@@ -37,7 +37,6 @@ final class GenderController extends AbstractController
             $gender = $genderRepository->findAll();
             return $serializerInterface->serialize($gender, 'json');
         });
-
         return new JsonResponse($jsonGender, JsonResponse::HTTP_OK, [], true);
     }
 

@@ -29,6 +29,9 @@ class Paiement
     #[ORM\Column(length: 255)]
     private ?string $creditCardNumber = null;
 
+    #[ORM\Column]
+    private ?float $totalPrice = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -78,6 +81,18 @@ class Paiement
     public function setCreditCardNumber(string $creditCardNumber): static
     {
         $this->creditCardNumber = $creditCardNumber;
+
+        return $this;
+    }
+
+    public function getTotalPrice(): ?float
+    {
+        return $this->totalPrice;
+    }
+
+    public function setTotalPrice(float $totalPrice): static
+    {
+        $this->totalPrice = $totalPrice;
 
         return $this;
     }

@@ -25,6 +25,9 @@ class Price
     #[ORM\JoinColumn(nullable: false)]
     private ?Parking $parking = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $currency = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -62,6 +65,18 @@ class Price
     public function setParking(?Parking $parking): static
     {
         $this->parking = $parking;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): static
+    {
+        $this->currency = $currency;
 
         return $this;
     }
