@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Paiement
 {
     //! ERREUR
-    //!   "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
+    //!   "0" is not a valid backing value for enum App\Entity\Traits\DataStatus
     // use Traits\StatisticsPropertiesTrait;
 
     #[ORM\Id]
@@ -19,7 +19,7 @@ class Paiement
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?CreditCard $creditCard = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]

@@ -22,7 +22,7 @@ class GenderFixtures extends Fixture
             $now = new \DateTime();
             $gender->setCreatedAt($now);
             $gender->setUpdatedAt($now);
-            
+
             $manager->persist($gender);
         }
         $manager->flush();

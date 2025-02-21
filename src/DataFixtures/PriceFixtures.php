@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\DataFixtures\ParkingFixtures;
 use Faker\Factory;
 use App\Entity\Price;
 use App\Repository\ParkingRepository;

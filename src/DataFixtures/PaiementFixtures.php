@@ -2,8 +2,9 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Booking;
+use App\DataFixtures\CreditCardFixtures;
 use Faker\Factory;
+use App\Entity\Booking;
 use App\Entity\Paiement;
 use App\Entity\Traits\DataStatus;
 use App\Repository\StatusRepository;
@@ -50,7 +51,7 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
             }
 
             //! ERREUR
-            //! "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
+            //! "0" is not a valid backing value for enum App\Entity\Traits\DataStatus
             // $paiement->setDataStatus(DataStatus::ACTIVE);
             // $paiement->setCreatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
             // $paiement->setUpdatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
