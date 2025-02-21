@@ -16,7 +16,10 @@ class CreditCardFixtures extends Fixture
         for ($i = 0; $i < 10; $i++) {
             $creditCard = new CreditCard();
             $creditCard->setNumber($faker->creditCardNumber);
-            $creditCard->setExpirationDate($faker->dateTimeBetween('-1 years', '+1 years'));
+            $expirationDate = $faker->dateTimeBetween('-1 years', '+1 years');
+            $expirationDate->setDate($expirationDate->format('Y'), $expirationDate->format('m'), $expirationDate->format('t'));
+            $expirationDate->setTime(0, 0);
+            $creditCard->setExpirationDate($expirationDate);
 
             $now = new \DateTime();
             $creditCard->setCreatedAt($now);

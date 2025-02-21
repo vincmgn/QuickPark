@@ -38,7 +38,8 @@
         "symfony/validator": "7.2.*",
         "symfony/yaml": "7.2.*",
         "twig/extra-bundle": "^2.12|^3.20",
-        "twig/twig": "^2.12|^3.20"
+        "twig/twig": "^2.12|^3.20",
+        "vich/uploader-bundle": "*"
     },
     "config": {
         "allow-plugins": {
@@ -86,7 +87,7 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
+            "allow-contrib": true,
             "require": "7.2.*",
             "docker": true
         }

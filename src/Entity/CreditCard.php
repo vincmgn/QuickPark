@@ -12,7 +12,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CreditCardRepository::class)]
-#[Assert\Callback([self::class, 'validateExpirationDate'])]
 class CreditCard
 {
     use Traits\StatisticsPropertiesTrait;
@@ -21,18 +20,15 @@ class CreditCard
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-    
-    #[ORM\Column(length: 16)]
+
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
     #[Assert\Length(
         min: 16,
         max: 16,
-        exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
-    )]
-    #[Assert\Regex(
-        pattern: '/^\d+$/',
-        message: 'The credit card number must contain only digits'
+        minMessage: 'The credit card number must be at least {{ limit }} characters long',
+        maxMessage: 'The credit card number cannot be longer than {{ limit }} characters'
     )]
     private ?string $number = null;
 

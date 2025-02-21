@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Gender;
+use OpenApi\Attributes as OA;
 use App\Repository\GenderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -13,7 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
-use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -82,9 +82,13 @@ final class GenderController extends AbstractController
      * Update an existing gender by ID
      *
      */
-    public function update(Gender $gender, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function update(Gender $gender, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
         $gender = $serializerInterface->deserialize($request->getContent(), Gender::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $gender]);
+        $errors = $validator->validate($gender);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], false);
+        }
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Gender"]);
 

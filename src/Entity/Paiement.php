@@ -29,24 +29,10 @@ class Paiement
     #[ORM\JoinColumn(nullable: false)]
     private ?Booking $booking = null;
 
-    #[ORM\Column(length: 16)]
-    #[Assert\NotBlank]
-    #[Assert\NotNull]
-    #[Assert\Length(
-        min: 16,
-        max: 16,
-        exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
-    )]
-    #[Assert\Regex(
-        pattern: '/^\d+$/',
-        message: 'The credit card number must contain only digits'
-    )]
+    #[ORM\Column(length: 255)]
     private ?string $creditCardNumber = null;
 
     #[ORM\Column]
-    #[Assert\NotNull]
-    #[Assert\Type('float')]
-    #[Assert\GreaterThan(0, message: "The total price must be greater than 0.")]
     private ?float $totalPrice = null;
 
     public function getId(): ?int
