@@ -23,7 +23,6 @@ final class EmailController extends AbstractController
     {
         $email = $emailRepository->findAll();
         $jsonEmail = $serializerInterface->serialize($email, 'json');
-
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -32,7 +31,6 @@ final class EmailController extends AbstractController
     public function get(Email $email, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonEmail = $serializerInterface->serialize($email, 'json');
-
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }
 }

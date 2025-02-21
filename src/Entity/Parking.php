@@ -5,7 +5,9 @@ namespace App\Entity;
 use App\Repository\ParkingRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
 
 #[ORM\Entity(repositoryClass: ParkingRepository::class)]
 class Parking
@@ -16,12 +18,6 @@ class Parking
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'point')]
-    private $location;
 
     #[ORM\Column]
     private ?bool $isEnabled = null;
@@ -38,6 +34,15 @@ class Parking
     #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'parking')]
     private Collection $bookings;
 
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: 'geography')]
+    private ?SpatialInterface $location = null;
+
     public function __construct()
     {
         $this->prices = new ArrayCollection();
@@ -47,18 +52,6 @@ class Parking
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getLocation()
-    {
-        return $this->location;
-    }
-
-    public function setLocation($location): static
-    {
-        $this->location = $location;
-
-        return $this;
     }
 
     public function isEnabled(): ?bool
@@ -129,6 +122,42 @@ class Parking
                 $booking->setParking(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getLocation(): ?SpatialInterface
+    {
+        return $this->location;
+    }
+
+    public function setLocation(SpatialInterface $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }
