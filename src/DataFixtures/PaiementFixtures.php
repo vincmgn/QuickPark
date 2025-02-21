@@ -30,7 +30,6 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
     {
         $faker = Factory::create();
         $statuses = $this->statusRepository->findAll();
-        $bookings = $this->bookingRepository->findAll();
         $creditCards = $this->creditCardRepository->findAll();
 
         for ($i = 0; $i < 10; $i++) {
@@ -48,12 +47,6 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
             } else {
                 $paiement->setCreditCardNumber($faker->creditCardNumber);
             }
-
-            //! ERREUR
-            //! "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
-            // $paiement->setDataStatus(DataStatus::ACTIVE);
-            // $paiement->setCreatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
-            // $paiement->setUpdatedAt($faker->dateTimeBetween('-1 years', '+1 years'));
 
             $manager->persist($paiement);
         }

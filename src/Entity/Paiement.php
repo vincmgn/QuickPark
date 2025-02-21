@@ -11,7 +11,7 @@ class Paiement
 {
     //! ERREUR
     //!   "0" is not a valid backing value for enum App\Entity\Traits\DataStatus  
-    // use Traits\StatisticsPropertiesTrait;
+    use Traits\StatisticsPropertiesTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
