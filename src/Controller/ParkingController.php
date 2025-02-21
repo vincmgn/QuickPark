@@ -19,15 +19,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class ParkingController extends AbstractController
 {
-    // #[Route('s', name: 'app_parking', methods: ['GET'])]
-    // #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
-    // public function index(ParkingRepository $parkingRepository, SerializerInterface $serializerInterface): JsonResponse
-    // {
-    //     $parking = $parkingRepository->findAll();
-    //     $jsonParking = $serializerInterface->serialize($parking, 'json');
+    #[Route('', name: 'all_parkings', methods: ['GET'])]
+    #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    public function index(ParkingRepository $parkingRepository, SerializerInterface $serializerInterface): JsonResponse
+    {
+        $parking = $parkingRepository->findAll();
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ["groups" => ["parking", "stats"]]);
 
-    //     return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
-    // }
+        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
+    }
 
     #[Route('/{id}', name: 'parking_get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]

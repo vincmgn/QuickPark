@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\ParkingRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ParkingRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
 
 #[ORM\Entity(repositoryClass: ParkingRepository::class)]
@@ -17,30 +18,37 @@ class Parking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["booking", "parking"])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(["booking", "parking"])]
     private ?bool $isEnabled = null;
 
     /**
      * @var Collection<int, Price>
      */
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'parking', orphanRemoval: true)]
+    #[Groups(["parking"])]
     private Collection $prices;
 
     /**
      * @var Collection<int, Booking>
      */
     #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'parking')]
+    #[Groups(["parking"])]
     private Collection $bookings;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["parking"])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(["parking"])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'geography')]
+    #[Groups(["parking"])]
     private ?SpatialInterface $location = null;
 
     public function __construct()

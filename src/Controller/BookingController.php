@@ -23,12 +23,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class BookingController extends AbstractController
 {
-    #[Route('s', name: 'app_booking', methods: ['GET'])]
+    #[Route('', name: 'app_booking', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
     public function index(BookingRepository $bookingRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $booking = $bookingRepository->findAll();
-        $jsonBooking = $serializerInterface->serialize($booking, 'json');
+        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats"]]);
 
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
@@ -37,19 +37,10 @@ final class BookingController extends AbstractController
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
     public function get(Booking $booking, SerializerInterface $serializerInterface): JsonResponse
     {
-        $jsonBooking = $serializerInterface->serialize($booking, 'json');
+        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats"]]);
 
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
-
-    // #[Route('/{id}', name: 'booking_get_paiement', methods: ['GET'])]
-    // #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
-    // public function getPaiement(Booking $booking, SerializerInterface $serializerInterface): JsonResponse
-    // {
-    //     $jsonPaiement = $serializerInterface->serialize($booking->paiement, 'json');
-
-    //     return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
-    // }
 
     #[Route('', name: 'booking_add', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Booking::class))]

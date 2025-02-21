@@ -15,7 +15,7 @@ class ParkingFixtures extends Fixture
         $faker = Factory::create();
         for ($i = 0; $i < 100; $i++) {
             $parking = new Parking();
-            $parking->setName($faker->name);
+            $parking->setName($faker->text(50));
             $parking->setDescription($faker->text);
 
             // Générer des coordonnées valides pour la géolocalisation

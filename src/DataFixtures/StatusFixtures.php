@@ -18,10 +18,6 @@ class StatusFixtures extends Fixture
         foreach ($statuses as $statusName) {
             $status = new Status();
             $status->setName($statusName);
-
-            $now = new \DateTime();
-            $status->setCreatedAt($now);
-            $status->setUpdatedAt($now);
             
             $manager->persist($status);
         }
