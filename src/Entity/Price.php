@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PriceRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -19,6 +20,8 @@ class Price
     private ?int $id = null;
 
     #[ORM\Column]
+
+    #[Groups(["booking", "parking"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('float')]
@@ -26,6 +29,7 @@ class Price
     private ?float $price = null;
 
     #[ORM\Column]
+    #[Groups(["parking"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('\DateInterval')]
@@ -45,6 +49,7 @@ class Price
     private ?Parking $parking = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["booking", "parking"])]
     private ?string $currency = null;
 
     public function getId(): ?int
