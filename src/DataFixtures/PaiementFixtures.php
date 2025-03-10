@@ -15,11 +15,13 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 class PaiementFixtures extends Fixture implements DependentFixtureInterface
 {
     private StatusRepository $statusRepository;
+    private BookingRepository $bookingRepository;
     private CreditCardRepository $creditCardRepository;
 
-    public function __construct(StatusRepository $statusRepository, CreditCardRepository $creditCardRepository)
+    public function __construct(StatusRepository $statusRepository, BookingRepository $bookingRepository, CreditCardRepository $creditCardRepository)
     {
         $this->statusRepository = $statusRepository;
+        $this->bookingRepository = $bookingRepository;
         $this->creditCardRepository = $creditCardRepository;
     }
 
@@ -31,10 +33,12 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
 
         for ($i = 0; $i < 10; $i++) {
             $randomStatus = $statuses[array_rand($statuses)];
+            $randomBooking = $randomBooking = $this->getReference('booking_' . $i, Booking::class);
             $randomCreditCard = ($i % 2 == 0) ? $creditCards[array_rand($creditCards)] : null;
 
             $paiement = new Paiement();
             $paiement->setStatus($randomStatus);
+            $paiement->setBooking($randomBooking);
             $paiement->setTotalPrice($faker->randomFloat(2, 0, 100));
             $paiement->setCreditCard($randomCreditCard);
             if ($randomCreditCard) {
@@ -44,8 +48,6 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
             }
 
             $manager->persist($paiement);
-        
-            $this->addReference('paiement_' . $i, $paiement);
         }
         $manager->flush();
     }
@@ -55,6 +57,7 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
         return [
             StatusFixtures::class,
             CreditCardFixtures::class,
+            BookingFixtures::class,
         ];
     }
 }

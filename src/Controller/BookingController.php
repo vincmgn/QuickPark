@@ -17,14 +17,17 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/api/booking')]
+#[Route('/api/booking', name: 'api_booking_')]
 #[OA\Tag(name: 'Booking')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class BookingController extends AbstractController
 {
-    #[Route('', name: 'app_booking', methods: ['GET'])]
+    #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
+    /**
+     * Get all bookings
+     */
     public function index(BookingRepository $bookingRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $booking = $bookingRepository->findAll();
@@ -33,8 +36,11 @@ final class BookingController extends AbstractController
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'booking_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
+    /**
+     * Get a specific booking by ID
+     */
     public function get(Booking $booking, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats"]]);
@@ -42,7 +48,7 @@ final class BookingController extends AbstractController
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('', name: 'booking_add', methods: ['POST'])]
+    #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Booking::class))]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
@@ -65,7 +71,7 @@ final class BookingController extends AbstractController
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/{id}', name: 'booking_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
@@ -81,7 +87,7 @@ final class BookingController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
-    #[Route('/{id}', name: 'booking_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
     /**
      * Delete a specific booking by ID

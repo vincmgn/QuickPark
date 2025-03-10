@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Paiement;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CreditCardRepository;
@@ -21,7 +20,8 @@ class CreditCard
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+
+    #[ORM\Column(length: 16)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
     #[Assert\Length(
