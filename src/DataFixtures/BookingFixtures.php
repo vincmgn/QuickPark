@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use Faker\Factory;
 use App\Entity\Booking;
+use App\Entity\Paiement;
 use App\Entity\Traits\DataStatus;
 use App\Repository\PriceRepository;
 use App\Repository\StatusRepository;
@@ -33,6 +34,7 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
         $prices = $this->priceRepository->findAll();
 
         for ($i = 0; $i < 10; $i++) {
+            $paiement = $this->getReference('paiement_' . $i, Paiement::class);
             $randomStatus = $statuses[array_rand($statuses)];
             $randomParking = $parkings[array_rand($parkings)];
             $randomPrice = $prices[array_rand($prices)];
@@ -40,6 +42,7 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
             $booking = new Booking();
             $booking->setParking($randomParking);
             $booking->setPrice($randomPrice);
+            $booking->setPaiement($paiement);
             $startDate = $faker->dateTimeBetween('-1 years', '+1 years');
             $endDate = $faker->dateTimeBetween($startDate, '+1 years');
             $booking->setStartDate($startDate);
@@ -51,8 +54,6 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
             $booking->setUpdatedAt($now);
 
             $manager->persist($booking);
-
-            $this->addReference('booking_' . $i, $booking);
         }
         $manager->flush();
     }
@@ -63,6 +64,7 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
             PriceFixtures::class,
             StatusFixtures::class,
             ParkingFixtures::class,
+            PaiementFixtures::class,
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EmailRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EmailRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -21,7 +22,9 @@ class Email
     private ?Status $status = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $email = null;
+    #[Assert\NotBlank]
+    #[Assert\Email(message: 'The email "{{ value }}" is not a valid email address.')]
+    private ?string $email = null;    
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $verifiedAt = null;
