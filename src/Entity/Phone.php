@@ -2,9 +2,8 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PhoneRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PhoneRepository::class)]
@@ -15,7 +14,6 @@ class Phone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['phone'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -31,16 +29,13 @@ class Phone
         pattern: '/^\+?[0-9\s\-]{10,25}$/',
         message: 'The phone number is not valid'
     )]
-    private ?string $number = null;
+    private ?string $number = null;    
 
     #[ORM\ManyToOne(inversedBy: 'phones')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['phone'])]
     private ?Status $status = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['phone'])]
-    #[Assert\Type("\DateTimeImmutable", message: "La date de vérification doit être une date valide")]
     private ?\DateTimeImmutable $verifiedAt = null;
 
     public function getId(): ?int

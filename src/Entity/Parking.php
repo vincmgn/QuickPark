@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Price;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ParkingRepository;
@@ -66,7 +65,6 @@ class Parking
     private ?string $description = null;
 
     #[ORM\Column(type: 'geography')]
-    #[Groups(["parking"])]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
     #[Groups(["parking"])]
