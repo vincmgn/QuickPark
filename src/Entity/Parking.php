@@ -69,6 +69,7 @@ class Parking
     #[Groups(["parking"])]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
+    #[Groups(["parking"])]
     private ?SpatialInterface $location = null;
 
     public static function validateLocation(self $object, ExecutionContextInterface $context): void
