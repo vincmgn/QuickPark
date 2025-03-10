@@ -8,6 +8,7 @@ use App\Repository\ParkingRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use LongitudeOne\Spatial\PHP\Types\Geography\Point;
+use Symfony\Component\Serializer\Annotation\Groups;
 use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -21,24 +22,29 @@ class Parking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["booking", "parking"])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(["booking", "parking"])]
     private ?bool $isEnabled = null;
 
     /**
      * @var Collection<int, Price>
      */
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'parking', orphanRemoval: true)]
+    #[Groups(["parking"])]
     private Collection $prices;
 
     /**
      * @var Collection<int, Booking>
      */
     #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'parking')]
+    #[Groups(["parking"])]
     private Collection $bookings;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["parking"])]
     #[Assert\NotBlank]
     #[Assert\NotNull]
     #[Assert\Length(
@@ -50,6 +56,7 @@ class Parking
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(["parking"])]
     #[Assert\NotBlank]
     #[Assert\Length(
         min: 10,
@@ -60,6 +67,9 @@ class Parking
     #[ORM\Column(type: 'geography')]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
+
+    #[ORM\Column(type: 'geography')]
+    #[Groups(["parking"])]
     private ?SpatialInterface $location = null;
 
     public static function validateLocation(self $object, ExecutionContextInterface $context): void

@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\BookingRepository;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[Assert\Callback([self::class, 'validateDates'])]
@@ -17,20 +18,25 @@ class Booking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["booking", "parking"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["booking" ])]
     private ?Parking $parking = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["booking"])]
     private ?Price $price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["booking", "parking"])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["booking", "parking"])]
     private ?\DateTimeInterface $endDate = null;
 
     public static function validateDates(Booking $booking, ExecutionContextInterface $context): void
@@ -44,9 +50,12 @@ class Booking
 
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["booking"])]
     private ?Status $status = null;
 
-    #[ORM\OneToOne(mappedBy: 'booking', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'booking')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["booking", "parking"])]
     private ?Paiement $paiement = null;
 
     public function getId(): ?int
@@ -119,13 +128,8 @@ class Booking
         return $this->paiement;
     }
 
-    public function setPaiement(Paiement $paiement): static
+    public function setPaiement(?Paiement $paiement): static
     {
-        // set the owning side of the relation if necessary
-        if ($paiement->getBooking() !== $this) {
-            $paiement->setBooking($this);
-        }
-
         $this->paiement = $paiement;
 
         return $this;

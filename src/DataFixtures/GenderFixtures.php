@@ -18,7 +18,7 @@ class GenderFixtures extends Fixture
         foreach ($genders as $genderName) {
             $gender = new Gender();
             $gender->setName($genderName);
-            
+
             $manager->persist($gender);
         }
         $manager->flush();

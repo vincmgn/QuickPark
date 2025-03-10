@@ -6,16 +6,20 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Traits\DataStatus;
 use App\DBAL\Types\DataStatusType;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait StatisticsPropertiesTrait
 {
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["stats"])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(["stats"])]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(type: DataStatusType::DATASTATUS, options: ['default' => DataStatus::ACTIVE])]
+    #[Groups(["stats"])]
     private DataStatus $dataStatus = DataStatus::ACTIVE;
 
     public function getDataStatus(): DataStatus
