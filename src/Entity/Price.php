@@ -7,6 +7,7 @@ use App\Repository\PriceRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
 #[Assert\Callback(callback: 'validateDuration')]
@@ -20,7 +21,6 @@ class Price
     private ?int $id = null;
 
     #[ORM\Column]
-
     #[Groups(["booking", "parking"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
@@ -42,7 +42,6 @@ class Price
                 ->addViolation();
         }
     }
-
 
     #[ORM\ManyToOne(inversedBy: 'prices')]
     #[ORM\JoinColumn(nullable: false)]

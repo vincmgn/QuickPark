@@ -19,7 +19,7 @@ class Paiement
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?CreditCard $creditCard = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
