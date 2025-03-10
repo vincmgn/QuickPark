@@ -5,7 +5,6 @@ namespace App\DataFixtures;
 use App\Entity\Booking;
 use Faker\Factory;
 use App\Entity\Paiement;
-use App\Entity\Traits\DataStatus;
 use App\Repository\StatusRepository;
 use App\Repository\BookingRepository;
 use App\Repository\CreditCardRepository;
