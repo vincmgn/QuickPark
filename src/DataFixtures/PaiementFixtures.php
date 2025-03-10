@@ -17,11 +17,13 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 class PaiementFixtures extends Fixture implements DependentFixtureInterface
 {
     private StatusRepository $statusRepository;
+
     private CreditCardRepository $creditCardRepository;
 
     public function __construct(StatusRepository $statusRepository, CreditCardRepository $creditCardRepository)
     {
         $this->statusRepository = $statusRepository;
+
         $this->creditCardRepository = $creditCardRepository;
     }
 
@@ -29,14 +31,17 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
     {
         $faker = Factory::create();
         $statuses = $this->statusRepository->findAll();
+
         $creditCards = $this->creditCardRepository->findAll();
 
         for ($i = 0; $i < 10; $i++) {
             $randomStatus = $statuses[array_rand($statuses)];
+
             $randomCreditCard = ($i % 2 == 0) ? $creditCards[array_rand($creditCards)] : null;
 
             $paiement = new Paiement();
             $paiement->setStatus($randomStatus);
+
             $paiement->setTotalPrice($faker->randomFloat(2, 0, 100));
             $paiement->setCreditCard($randomCreditCard);
             if ($randomCreditCard) {
@@ -57,6 +62,7 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
         return [
             StatusFixtures::class,
             CreditCardFixtures::class,
+
         ];
     }
 }
