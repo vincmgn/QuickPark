@@ -18,10 +18,6 @@ class GenderFixtures extends Fixture
         foreach ($genders as $genderName) {
             $gender = new Gender();
             $gender->setName($genderName);
-
-            $now = new \DateTime();
-            $gender->setCreatedAt($now);
-            $gender->setUpdatedAt($now);
             
             $manager->persist($gender);
         }

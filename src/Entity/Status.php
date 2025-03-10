@@ -10,8 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: StatusRepository::class)]
 class Status
 {
-    use Traits\StatisticsPropertiesTrait;
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
