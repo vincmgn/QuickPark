@@ -67,8 +67,6 @@ class Parking
     #[ORM\Column(type: 'geography')]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
-
-    #[ORM\Column(type: 'geography')]
     #[Groups(["parking"])]
     private ?SpatialInterface $location = null;
 

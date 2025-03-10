@@ -46,7 +46,7 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
             }
 
             $manager->persist($paiement);
-        
+
             $this->addReference('paiement_' . $i, $paiement);
         }
         $manager->flush();
