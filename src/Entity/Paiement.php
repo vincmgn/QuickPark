@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\PaiementRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -12,9 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\HasLifecycleCallbacks]
 class Paiement
 {
-    //! ERREUR
-    //!   "0" is not a valid backing value for enum App\Entity\Traits\DataStatus
-    // use Traits\StatisticsPropertiesTrait;
+    use Traits\StatisticsPropertiesTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,11 +29,28 @@ class Paiement
     #[Groups(["parking"])]
     private ?Status $status = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\OneToOne(inversedBy: 'paiement', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Booking $booking = null;
+
+    #[ORM\Column(length: 16)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 16,
+        max: 16,
+        exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
+    )]
+    #[Assert\Regex(
+        pattern: '/^\d+$/',
+        message: 'The credit card number must contain only digits'
+    )]
     private ?string $creditCardNumber = null;
 
     #[ORM\Column]
-    #[Groups(["booking"])]
+    #[Assert\NotNull]
+    #[Assert\Type('float')]
+    #[Assert\GreaterThan(0, message: "The total price must be greater than 0.")]
     private ?float $totalPrice = null;
 
     /**
