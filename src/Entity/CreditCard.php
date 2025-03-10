@@ -2,12 +2,19 @@
 
 namespace App\Entity;
 
+<<<<<<< Updated upstream
+=======
+use App\Repository\CreditCardRepository;
+>>>>>>> Stashed changes
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< Updated upstream
 use App\Repository\CreditCardRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
+=======
+>>>>>>> Stashed changes
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CreditCardRepository::class)]
@@ -20,7 +27,10 @@ class CreditCard
     #[ORM\Column]
     private ?int $id = null;
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     #[ORM\Column(length: 16)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
