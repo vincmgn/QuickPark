@@ -2,14 +2,18 @@
 
 namespace App\Entity;
 
-use App\Repository\ParkingRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ParkingRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use LongitudeOne\Spatial\PHP\Types\Geography\Point;
 use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ParkingRepository::class)]
+#[Assert\Callback([self::class, 'validateLocation'])]
 class Parking
 {
     use Traits\StatisticsPropertiesTrait;
@@ -35,13 +39,47 @@ class Parking
     private Collection $bookings;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 3,
+        max: 25,
+        minMessage: 'The parking name must be at least {{ limit }} characters long',
+        maxMessage: 'The parking name cannot be longer than {{ limit }} characters'
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 10,
+        minMessage: 'The parking description must be at least {{ limit }} characters long'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: 'geography')]
+    #[Assert\NotNull]
+    #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
     private ?SpatialInterface $location = null;
+
+    public static function validateLocation(self $object, ExecutionContextInterface $context): void
+    {
+        if ($object->location instanceof Point) {
+            $longitude = $object->location->getLongitude();
+            $latitude = $object->location->getLatitude();
+            if ($latitude < -90 || $latitude > 90) {
+                $context->buildViolation('The latitude must be between -90 and 90.')
+                    ->atPath('location')
+                    ->addViolation();
+            }
+
+            if ($longitude < -180 || $longitude > 180) {
+                $context->buildViolation('The longitude must be between -180 and 180.')
+                    ->atPath('location')
+                    ->addViolation();
+            }
+        }
+    }
 
     public function __construct()
     {

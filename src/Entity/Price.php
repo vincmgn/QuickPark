@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\PriceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PriceRepository;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
+#[Assert\Callback(callback: 'validateDuration')]
 class Price
 {
     use Traits\StatisticsPropertiesTrait;
@@ -16,10 +19,26 @@ class Price
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Type('float')]
+    #[Assert\GreaterThan(0, message: "The price must be greater than 0.")]
     private ?float $price = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Type('\DateInterval')]
     private ?\DateInterval $duration = null;
+    public static function validateDuration($object, ExecutionContextInterface $context)
+    {
+        if ($object->duration && $object->duration->h === 0 && $object->duration->i === 0 && $object->duration->s === 0) {
+            $context->buildViolation('The duration must be greater than 0 minute.')
+                ->atPath('duration')
+                ->addViolation();
+        }
+    }
+
 
     #[ORM\ManyToOne(inversedBy: 'prices')]
     #[ORM\JoinColumn(nullable: false)]

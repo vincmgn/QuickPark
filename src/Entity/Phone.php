@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PhoneRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PhoneRepository::class)]
 class Phone
@@ -16,7 +17,19 @@ class Phone
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $number = null;
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 10,
+        max: 25,
+        minMessage: 'The phone number must be at least {{ limit }} characters long',
+        maxMessage: 'The phone number cannot be longer than {{ limit }} characters'
+    )]
+    #[Assert\Regex(
+        pattern: '/^\+?[0-9\s\-]{10,25}$/',
+        message: 'The phone number is not valid'
+    )]
+    private ?string $number = null;    
 
     #[ORM\ManyToOne(inversedBy: 'phones')]
     #[ORM\JoinColumn(nullable: false)]
