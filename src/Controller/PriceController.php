@@ -11,14 +11,17 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
 
-#[Route('/api/price')]
+#[Route('/api/price', name: 'api_price_')]
 #[OA\Tag(name: 'Price')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class PriceController extends AbstractController
 {
-    #[Route('s', name: 'app_price', methods: ['GET'])]
+    #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Price::class))]
+    /**
+     * Get all prices
+     */
     public function index(PriceRepository $priceRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $price = $priceRepository->findAll();
@@ -27,8 +30,11 @@ final class PriceController extends AbstractController
         return new JsonResponse($jsonPrice, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'price_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Price::class))]
+    /**
+     * Get a specific price by ID
+     */
     public function get(Price $price, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonPrice = $serializerInterface->serialize($price, 'json');

@@ -2,7 +2,15 @@
 
 namespace App\Serializer\Normalizer;
 
+use App\Entity\Email;
+use App\Entity\Phone;
 use App\Entity\Gender;
+use App\Entity\Booking;
+use App\Entity\Parking;
+use App\Entity\Paiement;
+use App\Entity\CreditCard;
+use App\Entity\Price;
+use App\Entity\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -55,7 +63,15 @@ class AutoDiscoveryNormalizer implements NormalizerInterface
     public function getSupportedTypes(?string $format): array
     {
         return [
+            Booking::class => true,
+            CreditCard::class => true,
+            Email::class => true,
             Gender::class => true,
+            Paiement::class => true,
+            Parking::class => true,
+            Phone::class,
+            Price::class => true,
+            User::class => true,
         ];
     }
 }

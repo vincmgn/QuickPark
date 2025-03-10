@@ -15,13 +15,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/api/credit_card')]
+#[Route('/api/credit_card', name: 'api_credit_card_')]
 #[OA\Tag(name: 'CreditCard')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class CreditCardController extends AbstractController
 {
-    #[Route('', name: 'app_credit_card', methods: ['GET'])]
+    #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: CreditCard::class))]
     /**
      * Get all credit cards
@@ -34,7 +34,7 @@ final class CreditCardController extends AbstractController
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'credit_card_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: CreditCard::class))]
     /**
      * Get a specific credit card by ID
@@ -46,7 +46,7 @@ final class CreditCardController extends AbstractController
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('', name: 'credit_card_add', methods: ['POST'])]
+    #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: CreditCard::class))]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2021-12-31 00:00:00"]))]
     /**
@@ -67,7 +67,7 @@ final class CreditCardController extends AbstractController
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
 
-    #[Route('/{id}', name: 'credit_card_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2021-12-31 00:00:00"]))]
     /**
@@ -85,7 +85,7 @@ final class CreditCardController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
-    #[Route('/{id}', name: 'credit_card_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
     /**
      * Delete a credit card

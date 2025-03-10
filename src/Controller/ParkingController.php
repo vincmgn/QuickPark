@@ -13,14 +13,17 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/api/parking')]
+#[Route('/api/parking', name: 'api_parking_')]
 #[OA\Tag(name: 'Parking')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class ParkingController extends AbstractController
 {
-    #[Route('', name: 'all_parkings', methods: ['GET'])]
+    #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    /**
+     * Get all parkings
+     */
     public function index(ParkingRepository $parkingRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $parking = $parkingRepository->findAll();
@@ -29,8 +32,11 @@ final class ParkingController extends AbstractController
         return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{id}', name: 'parking_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    /**
+     * Get a specific parking by ID
+     */
     public function get(Parking $parking, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonParking = $serializerInterface->serialize($parking, 'json');

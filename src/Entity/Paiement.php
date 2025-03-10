@@ -2,12 +2,10 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\PaiementRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PaiementRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -53,17 +51,6 @@ class Paiement
     #[Assert\GreaterThan(0, message: "The total price must be greater than 0.")]
     private ?float $totalPrice = null;
 
-    /**
-     * @var Collection<int, Booking>
-     */
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'paiement')]
-    private Collection $booking;
-
-    public function __construct()
-    {
-        $this->booking = new ArrayCollection();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -93,6 +80,18 @@ class Paiement
         return $this;
     }
 
+    public function getBooking(): ?Booking
+    {
+        return $this->booking;
+    }
+
+    public function setBooking(Booking $booking): static
+    {
+        $this->booking = $booking;
+
+        return $this;
+    }
+
     public function getCreditCardNumber(): ?string
     {
         return $this->creditCardNumber;
@@ -113,36 +112,6 @@ class Paiement
     public function setTotalPrice(float $totalPrice): static
     {
         $this->totalPrice = $totalPrice;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Booking>
-     */
-    public function getBooking(): Collection
-    {
-        return $this->booking;
-    }
-
-    public function addBooking(Booking $booking): static
-    {
-        if (!$this->booking->contains($booking)) {
-            $this->booking->add($booking);
-            $booking->setPaiement($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBooking(Booking $booking): static
-    {
-        if ($this->booking->removeElement($booking)) {
-            // set the owning side to null (unless already changed)
-            if ($booking->getPaiement() === $this) {
-                $booking->setPaiement(null);
-            }
-        }
 
         return $this;
     }

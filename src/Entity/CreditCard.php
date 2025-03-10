@@ -2,14 +2,10 @@
 
 namespace App\Entity;
 
-use App\Entity\Paiement;
 use App\Repository\CreditCardRepository;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\CreditCardRepository;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CreditCardRepository::class)]
@@ -22,7 +18,7 @@ class CreditCard
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-    
+
     #[ORM\Column(length: 16)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
