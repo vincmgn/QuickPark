@@ -133,9 +133,11 @@ final class PhoneController extends AbstractController
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the phone to delete', example: 1)]
     #[OA\Response(response: 403, description: 'Forbidden')]
     /**
      * Delete a phone by ID
+     * This is a hard and definitive delete because of GDPR rules
      */
     public function delete(Phone $phone, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {

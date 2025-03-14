@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\CreditCard;
 use OpenApi\Attributes as OA;
+use App\Entity\Traits\DataStatus;
 use App\Repository\CreditCardRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -140,8 +141,14 @@ final class CreditCardController extends AbstractController
      */
     public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        $entityManagerInterface->remove($creditCard);
+        // Soft delete
+        $creditCard->setDataStatus(DataStatus::DELETED);
+        $creditCard->setUpdatedAt(new \DateTime());
+
+        $entityManagerInterface->persist($creditCard);
         $entityManagerInterface->flush();
+        $cache->invalidateTags(['CreditCard']);
+
         $cache->invalidateTags(['CreditCard']);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);

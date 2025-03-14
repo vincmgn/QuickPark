@@ -4,14 +4,16 @@ namespace App\Controller;
 
 use App\Entity\CustomMedia;
 use OpenApi\Attributes as OA;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\Traits\DataStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/media', name: 'api_media_')]
 #[OA\Tag(name: 'Media')]
@@ -57,10 +59,17 @@ final class MediaController extends AbstractController
 
 
     #[Route('', name: 'delete', methods: ['DELETE'])]
-    public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface): Response
+    public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        $entityManagerInterface->remove($media);
+        // Soft delete
+        $media->setDataStatus(DataStatus::DELETED);
+        $media->setUpdatedAt(new \DateTime());
+
+        $entityManagerInterface->persist($media);
         $entityManagerInterface->flush();
+
+        $cache->invalidateTags(["Media"]);
+
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

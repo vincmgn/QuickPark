@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Booking;
 use OpenApi\Attributes as OA;
+use App\Entity\Traits\DataStatus;
 use App\Repository\BookingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -94,10 +95,15 @@ final class BookingController extends AbstractController
      */
     public function delete(Booking $booking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        $entityManagerInterface->remove($booking);
+        // Soft delete
+        $booking->setDataStatus(DataStatus::DELETED);
+        $booking->setUpdatedAt(new \DateTime());
+    
+        $entityManagerInterface->persist($booking);
         $entityManagerInterface->flush();
+    
         $cache->invalidateTags(["Booking"]);
-
+    
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
-    }
+    }    
 }

@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\File\File;
 #[ORM\Entity(repositoryClass: CustomMediaRepository::class)]
 class CustomMedia
 {
+    use Traits\StatisticsPropertiesTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
