@@ -2,10 +2,11 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Gender;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use App\Entity\Gender;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
 class GenderFixtures extends Fixture
 {

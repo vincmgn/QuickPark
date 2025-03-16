@@ -18,10 +18,12 @@ class Paiement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["user_booking"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
+    #[Groups(["user_booking"])]
     private ?CreditCard $creditCard = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
@@ -41,10 +43,11 @@ class Paiement
         pattern: '/^\d+$/',
         message: 'The credit card number must contain only digits'
     )]
+    #[Groups(["user_booking"])]
     private ?string $creditCardNumber = null;
 
     #[ORM\Column]
-    #[Groups(["booking"])]
+    #[Groups(["booking", "user_booking"])]
     #[Assert\NotNull]
     #[Assert\Type('float')]
     #[Assert\GreaterThan(0, message: "The total price must be greater than 0.")]

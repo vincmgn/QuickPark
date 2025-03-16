@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\EmailRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\EmailRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EmailRepository::class)]
@@ -15,6 +16,7 @@ class Email
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["user"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'emails')]
@@ -24,10 +26,16 @@ class Email
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email(message: 'The email "{{ value }}" is not a valid email address.')]
+    #[Groups(["user"])]
     private ?string $email = null;    
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["user"])]
     private ?\DateTimeImmutable $verifiedAt = null;
+
+    #[ORM\OneToOne(inversedBy: 'email', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    private ?User $owner = null;
 
     public function getId(): ?int
     {
@@ -66,6 +74,18 @@ class Email
     public function setVerifiedAt(?\DateTimeImmutable $verifiedAt): static
     {
         $this->verifiedAt = $verifiedAt;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }

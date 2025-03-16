@@ -18,27 +18,26 @@ class Booking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking" ])]
+    #[Groups(["booking", "user_booking"])]
     private ?Parking $parking = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking"])]
+    #[Groups(["booking", "user_booking"])]
     private ?Price $price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?\DateTimeInterface $endDate = null;
-
     public static function validateDates(Booking $booking, ExecutionContextInterface $context): void
     {
         if ($booking->getStartDate() >= $booking->getEndDate()) {
@@ -55,8 +54,12 @@ class Booking
 
     #[ORM\ManyToOne(inversedBy: 'booking')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?Paiement $paiement = null;
+
+    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\JoinColumn(name: "client_id", referencedColumnName: "id", nullable: false)]
+    private ?User $client = null;
 
     public function getId(): ?int
     {
@@ -131,6 +134,18 @@ class Booking
     public function setPaiement(?Paiement $paiement): static
     {
         $this->paiement = $paiement;
+
+        return $this;
+    }
+
+    public function getClient(): ?User
+    {
+        return $this->client;
+    }
+
+    public function setClient(?User $client): static
+    {
+        $this->client = $client;
 
         return $this;
     }

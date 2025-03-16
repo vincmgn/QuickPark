@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\PhoneRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PhoneRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PhoneRepository::class)]
@@ -14,11 +15,13 @@ class Phone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["user"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
+    #[Groups(["user"])]
     #[Assert\Length(
         min: 10,
         max: 25,
@@ -36,7 +39,12 @@ class Phone
     private ?Status $status = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["user"])]
     private ?\DateTimeImmutable $verifiedAt = null;
+
+    #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    private ?User $owner = null;    
 
     public function getId(): ?int
     {
@@ -75,6 +83,18 @@ class Phone
     public function setVerifiedAt(?\DateTimeImmutable $verifiedAt): static
     {
         $this->verifiedAt = $verifiedAt;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }
