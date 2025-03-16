@@ -5,7 +5,6 @@ doctrine:
         types:
             geography: LongitudeOne\Spatial\DBAL\Types\GeographyType
             point: LongitudeOne\Spatial\DBAL\Types\Geography\PointType
-            data_status: App\DBAL\Types\DataStatusType
         url: '%env(resolve:DATABASE_URL)%'
 
         # IMPORTANT: You MUST configure your server version,

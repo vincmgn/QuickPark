@@ -18,16 +18,16 @@ trait StatisticsPropertiesTrait
     #[Groups(["stats"])]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(type: DataStatusType::DATASTATUS, options: ['default' => DataStatus::ACTIVE])]
+    #[ORM\Column(type: 'string', length: 255, options: ['default' => 'active'])]
     #[Groups(["stats"])]
-    private DataStatus $dataStatus = DataStatus::ACTIVE;
+    private ?string $dataStatus = 'active';
 
-    public function getDataStatus(): DataStatus
+    public function getDataStatus(): string
     {
         return $this->dataStatus;
     }
 
-    public function setDataStatus(DataStatus $dataStatus): static
+    public function setDataStatus(string $dataStatus): static
     {
         $this->dataStatus = $dataStatus;
         return $this;
