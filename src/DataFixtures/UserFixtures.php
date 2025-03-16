@@ -40,15 +40,27 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
             $this->addReference('user_' . $i, $user);
         }
 
+        $maleGender = reset(array_filter($genders, fn($gender) => $gender->getName() === 'Male'));
+
         $adminUser = new User();
         $adminUser->setRoles(['ROLE_ADMIN']);
-        $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'password'));
-        $adminUser->setUsername('admin');
-        $adminUser->setGender($genders[array_rand($genders)]);
+        $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
+        $adminUser->setUsername('alexnbl27');
+        $adminUser->setGender($maleGender);
         $adminUser->setCreatedAt($now);
         $adminUser->setUpdatedAt($now);
         $manager->persist($adminUser);
-        $this->addReference('admin', $adminUser);
+        $this->addReference('alexnbl27', $adminUser);
+
+        $adminUser = new User();
+        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
+        $adminUser->setUsername('vinvin');
+        $adminUser->setGender($maleGender);
+        $adminUser->setCreatedAt($now);
+        $adminUser->setUpdatedAt($now);
+        $manager->persist($adminUser);
+        $this->addReference('vinvin', $adminUser);
 
         $manager->flush(); 
     }
