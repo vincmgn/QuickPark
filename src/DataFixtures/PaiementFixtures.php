@@ -4,11 +4,8 @@ namespace App\DataFixtures;
 
 use App\DataFixtures\CreditCardFixtures;
 use Faker\Factory;
-use App\Entity\Booking;
 use App\Entity\Paiement;
-use App\Entity\Traits\DataStatus;
 use App\Repository\StatusRepository;
-use App\Repository\BookingRepository;
 use App\Repository\CreditCardRepository;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
