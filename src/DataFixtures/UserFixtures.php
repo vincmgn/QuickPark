@@ -40,7 +40,8 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
             $this->addReference('user_' . $i, $user);
         }
 
-        $maleGender = reset(array_filter($genders, fn($gender) => $gender->getName() === 'Male'));
+        $filteredGenders = array_filter($genders, fn($gender) => $gender->getName() === 'Male');
+        $maleGender = reset($filteredGenders);
 
         $adminUser = new User();
         $adminUser->setRoles(['ROLE_ADMIN']);

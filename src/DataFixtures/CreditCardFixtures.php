@@ -23,7 +23,7 @@ class CreditCardFixtures extends Fixture implements DependentFixtureInterface
             $expirationDate->setTime(0, 0);
             $creditCard->setExpirationDate($expirationDate);
             $creditCard->setOwner($user);
-            $creditCard->setOwnerName($user->getFirstName() . ' ' . $user->getLastName());
+            $creditCard->setOwnerName($faker->name);
 
             $now = new \DateTime();
             $creditCard->setCreatedAt($now);
