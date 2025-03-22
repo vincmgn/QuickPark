@@ -22,6 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
