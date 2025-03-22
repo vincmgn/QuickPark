@@ -3,7 +3,6 @@
 namespace App\Entity\Traits;
 
 use App\Types\DataStatus;
-use App\Types\DataStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
