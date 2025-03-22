@@ -8,9 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\PaiementRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PaiementRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\Loggable]
 class Paiement
 {
     use Traits\StatisticsPropertiesTrait;
@@ -29,6 +31,7 @@ class Paiement
     #[ORM\ManyToOne(inversedBy: 'paiements')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["parking"])]
+    #[Gedmo\Versioned]
     private ?Status $status = null;
 
     #[ORM\Column(length: 16)]

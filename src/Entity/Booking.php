@@ -8,6 +8,7 @@ use App\Repository\BookingRepository;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[Assert\Callback([self::class, 'validateDates'])]
