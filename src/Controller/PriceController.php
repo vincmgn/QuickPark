@@ -94,7 +94,7 @@ final class PriceController extends AbstractController
     }
 
 
-    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["price" => 10.5, "duration" => "P1D", "currency" => "EUR", "parking" => 1]))]
     /**
@@ -102,19 +102,39 @@ final class PriceController extends AbstractController
      */
     public function update(Price $price, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        $serializerInterface->deserialize(
-            $request->getContent(),
-            Price::class,
-            'json',
-            [
-                'object_to_populate' => $price,
-                'disable_type_enforcement' => true,
-            ]
-        );
+        $data = json_decode($request->getContent(), true);
+
+        if (isset($data['price'])) {
+            $price->setPrice($data['price']);
+        }
+
+        if (isset($data['duration'])) {
+            $duration = new \DateInterval($data['duration']);
+            $price->setDuration($duration);
+        }
+
+        if (isset($data['currency'])) {
+            $price->setCurrency($data['currency']);
+        }
+
+        if (isset($data['parking'])) {
+            $parkingId = $data['parking'];
+            $parking = $entityManagerInterface->getRepository(Parking::class)->find($parkingId);
+
+            if (!$parking || !$parking->getOwner()) {
+                return new JsonResponse(['error' => 'Parking not found or must have an owner'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+
+            $price->setParking($parking);
+        }
+
+        $price->setUpdatedAt(new \DateTime());
+
         $errors = $validator->validate($price);
         if (count($errors) > 0) {
-            return new JsonResponse($serializerInterface->serialize($errors, 'json', ['groups' => ['booking', 'parking',  'user_booking']]), JsonResponse::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
+
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Price"]);
 
