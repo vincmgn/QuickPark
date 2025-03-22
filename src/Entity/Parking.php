@@ -13,9 +13,12 @@ use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Gedmo\Mapping\Annotation as Gedmo;
+
 
 #[ORM\Entity(repositoryClass: ParkingRepository::class)]
 #[Assert\Callback([self::class, 'validateLocation'])]
+#[Gedmo\Loggable]
 class Parking
 {
     use Traits\StatisticsPropertiesTrait;
@@ -28,6 +31,7 @@ class Parking
 
     #[ORM\Column]
     #[Groups(["booking", "parking"])]
+    #[Gedmo\Versioned]
     private ?bool $isEnabled = null;
 
     /**
@@ -54,6 +58,7 @@ class Parking
         minMessage: 'The parking name must be at least {{ limit }} characters long',
         maxMessage: 'The parking name cannot be longer than {{ limit }} characters'
     )]
+    #[Gedmo\Versioned]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -63,18 +68,15 @@ class Parking
         min: 10,
         minMessage: 'The parking description must be at least {{ limit }} characters long'
     )]
+    #[Gedmo\Versioned]
     private ?string $description = null;
 
     #[ORM\Column(type: 'geography')]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
     #[Groups(["parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?SpatialInterface $location = null;
-
-    #[ORM\ManyToOne(inversedBy: 'parkings')]
-    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
-    private ?User $owner = null;
-
     public static function validateLocation(self $object, ExecutionContextInterface $context): void
     {
         if ($object->location instanceof Point) {
@@ -93,6 +95,10 @@ class Parking
             }
         }
     }
+
+    #[ORM\ManyToOne(inversedBy: 'parkings')]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    private ?User $owner = null;
 
     public function __construct()
     {

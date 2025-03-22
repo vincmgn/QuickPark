@@ -7,9 +7,11 @@ use App\Repository\PriceRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
 #[Assert\Callback(callback: 'validateDuration')]
+#[Gedmo\Loggable]
 class Price
 {
     use Traits\StatisticsPropertiesTrait;
@@ -26,6 +28,7 @@ class Price
     #[Assert\NotBlank]
     #[Assert\Type('float')]
     #[Assert\GreaterThan(0, message: "The price must be greater than 0.")]
+    #[Gedmo\Versioned]
     private ?float $price = null;
 
     #[ORM\Column]
@@ -33,6 +36,7 @@ class Price
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('\DateInterval')]
+    #[Gedmo\Versioned]
     private ?\DateInterval $duration = null;
     public static function validateDuration($object, ExecutionContextInterface $context)
     {
@@ -52,6 +56,7 @@ class Price
 
     #[ORM\Column(length: 255)]
     #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?string $currency = null;
 
     public function getId(): ?int

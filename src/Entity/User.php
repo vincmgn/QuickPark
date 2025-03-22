@@ -13,10 +13,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_UUID', fields: ['id'])]
+#[Gedmo\Loggable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Traits\StatisticsPropertiesTrait;
@@ -39,14 +41,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Gedmo\Versioned]
     private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Groups(["user"])]
+    #[Gedmo\Versioned]
     private ?string $username = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
     #[Groups(["user"])]
+    #[Gedmo\Versioned]
     private ?string $profilePicture = null;
 
     /**
@@ -69,14 +74,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToOne]
     #[Groups(["user"])]
+    #[Gedmo\Versioned]
     private ?Gender $gender = null;
 
     #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
     #[Groups(["user"])]
+    #[Gedmo\Versioned]
     private ?Phone $phone = null;
 
     #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
     #[Groups(["user"])]
+    #[Gedmo\Versioned]
     private ?Email $email = null;
 
     public function __construct()
