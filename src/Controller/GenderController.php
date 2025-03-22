@@ -70,7 +70,7 @@ final class GenderController extends AbstractController
         $cache->invalidateTags(["Gender"]);
 
         $jsonGender = $serializerInterface->serialize($gender, 'json');
-        $location = $urlGenerator->generate("gender_get", ['id' => $gender->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate("api_gender_get", ['id' => $gender->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonGender, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
