@@ -2,10 +2,9 @@
 
 namespace App\Entity\Traits;
 
+use App\Types\DataStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Traits\DataStatus;
-use App\DBAL\Types\DataStatusType;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 trait StatisticsPropertiesTrait
@@ -27,11 +26,11 @@ trait StatisticsPropertiesTrait
         return $this->dataStatus;
     }
 
-    public function setDataStatus(string $dataStatus): static
+    public function setDataStatus(string|DataStatus $dataStatus): static
     {
-        $this->dataStatus = $dataStatus;
+        $this->dataStatus = $dataStatus instanceof DataStatus ? $dataStatus->value : $dataStatus;
         return $this;
-    }
+    }    
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
