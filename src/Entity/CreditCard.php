@@ -48,6 +48,7 @@ class CreditCard
 
     #[ORM\ManyToOne(inversedBy: 'creditCards')]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    #[Groups(["credit_card_detail"])]
     private ?User $owner = null;
 
     #[ORM\Column(length: 255)]

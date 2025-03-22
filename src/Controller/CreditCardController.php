@@ -29,7 +29,9 @@ final class CreditCardController extends AbstractController
     public function index(CreditCardRepository $creditCardRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $creditCard = $creditCardRepository->findAll();
-        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json');
+        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', [
+            'groups' => ['user_booking', 'user']
+        ]);
 
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_OK, [], true);
     }
@@ -41,7 +43,9 @@ final class CreditCardController extends AbstractController
      */
     public function get(CreditCard $creditCard, SerializerInterface $serializerInterface): JsonResponse
     {
-        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json');
+        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', [
+            'groups' => ['user_booking', 'user']
+        ]);
 
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_OK, [], true);
     }
