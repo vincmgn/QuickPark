@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Booking;
 use OpenApi\Attributes as OA;
-use App\Entity\Traits\DataStatus;
+use App\Types\DataStatus;
 use App\Repository\BookingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;

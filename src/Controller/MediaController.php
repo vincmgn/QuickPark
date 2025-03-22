@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
+use App\Types\DataStatus;
 use App\Entity\CustomMedia;
 use OpenApi\Attributes as OA;
-use App\Entity\Traits\DataStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

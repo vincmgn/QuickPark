@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\CreditCard;
 use OpenApi\Attributes as OA;
-use App\Entity\Traits\DataStatus;
+use App\Types\DataStatus;
 use App\Repository\CreditCardRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
