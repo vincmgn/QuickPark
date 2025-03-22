@@ -57,19 +57,20 @@ final class MediaController extends AbstractController
         return new JsonResponse(["media" => $media, "location" => $location], Response::HTTP_OK);
     }
 
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the media to delete', example: 1)]
 
+    /**
+     * Delete a media
+     * This is a hard and definitive delete because of GDPR rules and because a media is a heavy file
+     */
     #[Route('', name: 'delete', methods: ['DELETE'])]
     public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        // Soft delete
-        $media->setDataStatus(DataStatus::DELETED);
-        $media->setUpdatedAt(new \DateTime());
-
-        $entityManagerInterface->persist($media);
+        $entityManagerInterface->remove($media);
         $entityManagerInterface->flush();
-
         $cache->invalidateTags(["Media"]);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

@@ -136,21 +136,18 @@ final class CreditCardController extends AbstractController
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the phone to delete', example: 1)]
+
     /**
      * Delete a credit card
+     * This is a hard and definitive delete because of GDPR rules
      */
     public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        // Soft delete
-        $creditCard->setDataStatus(DataStatus::DELETED);
-        $creditCard->setUpdatedAt(new \DateTime());
-
-        $entityManagerInterface->persist($creditCard);
+        $entityManagerInterface->remove($creditCard);
         $entityManagerInterface->flush();
+        
         $cache->invalidateTags(['CreditCard']);
-
-        $cache->invalidateTags(['CreditCard']);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 }

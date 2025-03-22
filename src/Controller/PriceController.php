@@ -145,13 +145,13 @@ final class PriceController extends AbstractController
     #[OA\Response(response: 204, description: 'No content')]
     /**
      * Delete a price by ID
+     * This is a hard and definitive delete because we don't care about keeping prices data
      */
     public function delete(Price $price, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
         $entityManagerInterface->remove($price);
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Price"]);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 }
