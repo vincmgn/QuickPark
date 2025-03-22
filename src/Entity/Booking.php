@@ -15,6 +15,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Booking
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

@@ -9,5 +9,4 @@ enum DataStatus: string
     case ARCHIVED = 'archived';
     case CANCELLED = 'cancelled';
     case DRAFT = 'draft';
-    case MOCK = 'mock';
 }

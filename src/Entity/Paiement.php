@@ -16,6 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Paiement
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

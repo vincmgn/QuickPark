@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Entity\Traits;
-
-use App\Types\DataStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,23 +14,6 @@ trait StatisticsPropertiesTrait
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(["stats"])]
     private ?\DateTimeInterface $updatedAt = null;
-
-    #[ORM\Column(type: 'string', length: 255, options: ['default' => 'active'])]
-    #[Groups(["stats"])]
-    private ?string $dataStatus = DataStatus::ACTIVE->value;
-
-    public function getDataStatus(): string
-    {
-        return $this->dataStatus;
-    }
-
-    /// Set the data status
-    /// @param string|DataStatus $dataStatus
-    public function setDataStatus(string|DataStatus $dataStatus): static
-    {
-        $this->dataStatus = $dataStatus instanceof DataStatus ? $dataStatus->value : $dataStatus;
-        return $this;
-    }    
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
