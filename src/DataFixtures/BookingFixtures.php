@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use Faker\Factory;
 use App\Entity\Booking;
 use App\Entity\Paiement;
-use App\Entity\Traits\DataStatus;
+use App\Entity\User;
 use App\Repository\PriceRepository;
 use App\Repository\StatusRepository;
 use App\Repository\ParkingRepository;
@@ -32,8 +32,8 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
         $statuses = $this->statusRepository->findAll();
         $parkings = $this->parkingRepository->findAll();
         $prices = $this->priceRepository->findAll();
-
         for ($i = 0; $i < 10; $i++) {
+            $user = $this->getReference('user_' . $i, User::class);
             $paiement = $this->getReference('paiement_' . $i, Paiement::class);
             $randomStatus = $statuses[array_rand($statuses)];
             $randomParking = $parkings[array_rand($parkings)];
@@ -48,6 +48,7 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
             $booking->setStartDate($startDate);
             $booking->setEndDate($endDate);
             $booking->setStatus($randomStatus);
+            $booking->setClient($user);
 
             $now = new \DateTime();
             $booking->setCreatedAt($now);
@@ -65,6 +66,7 @@ class BookingFixtures extends Fixture implements DependentFixtureInterface
             StatusFixtures::class,
             ParkingFixtures::class,
             PaiementFixtures::class,
+            UserFixtures::class,
         ];
     }
 }

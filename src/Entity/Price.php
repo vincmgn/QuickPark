@@ -17,10 +17,11 @@ class Price
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["user_booking"])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('float')]
@@ -28,7 +29,7 @@ class Price
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(["parking"])]
+    #[Groups(["parking", "user_booking"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('\DateInterval')]
@@ -47,7 +48,7 @@ class Price
     private ?Parking $parking = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?string $currency = null;
 
     public function getId(): ?int

@@ -2,27 +2,32 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Uid\Uuid;
-use OpenApi\Annotations as OA;
-
-use function PHPSTORM_META\type;
+use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
+use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_UUID', fields: ['uuid'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_UUID', fields: ['id'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use Traits\StatisticsPropertiesTrait;
+
     #[ORM\Id]
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[OA\Property(type: "string", format: "uuid", description: "The unique identifier of the user")]
-    private ?Uuid $uuid = null;
+    #[Groups(["user"])]
+    private ?Uuid $id = null;
 
     /**
      * @var list<string> The user roles
@@ -36,18 +41,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column(type: 'string', length: 180, unique: true)]
+    #[Groups(["user"])]
+    private ?string $username = null;
 
-    public function getUuid(): ?Uuid
+    #[ORM\Column(type: 'string', nullable: true)]
+    #[Groups(["user"])]
+    private ?string $profilePicture = null;
+
+    /**
+     * @var Collection<int, Parking>
+     */
+    #[ORM\OneToMany(targetEntity: Parking::class, mappedBy: 'owner')]
+    private Collection $parkings;
+
+    /**
+     * @var Collection<int, Booking>
+     */
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'client')]
+    private Collection $bookings;
+
+    /**
+     * @var Collection<int, CreditCard>
+     */
+    #[ORM\OneToMany(targetEntity: CreditCard::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $creditCards;
+
+    #[ORM\ManyToOne]
+    #[Groups(["user"])]
+    private ?Gender $gender = null;
+
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
+    #[Groups(["user"])]
+    private ?Phone $phone = null;
+
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
+    #[Groups(["user"])]
+    private ?Email $email = null;
+
+    public function __construct()
     {
-        return $this->uuid;
+        $this->id = $this->uuid ?? Uuid::v4();
+        $this->parkings = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
+        $this->creditCards = new ArrayCollection();
+    }
+    
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
     }
 
-    public function setUuid(string $uuid): static
+    public function setId(Uuid $uuid): static
     {
-        $this->uuid = $uuid;
+        $this->id = $uuid;
 
         return $this;
     }
+    
 
     /**
      * A visual identifier that represents this user.
@@ -56,7 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->uuid;
+        return (string) $this->id;
     }
 
     /**
@@ -105,5 +157,166 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    // Getters & Setters
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?string $profilePicture): static
+    {
+        $this->profilePicture = $profilePicture;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Parking>
+     */
+    public function getParkings(): Collection
+    {
+        return $this->parkings;
+    }
+
+    public function addParking(Parking $parking): static
+    {
+        if (!$this->parkings->contains($parking)) {
+            $this->parkings->add($parking);
+            $parking->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParking(Parking $parking): static
+    {
+        if ($this->parkings->removeElement($parking)) {
+            // set the owning side to null (unless already changed)
+            if ($parking->getOwner() === $this) {
+                $parking->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): static
+    {
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): static
+    {
+        if ($this->bookings->removeElement($booking)) {
+            // set the owning side to null (unless already changed)
+            if ($booking->getClient() === $this) {
+                $booking->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CreditCard>
+     */
+    public function getCreditCards(): Collection
+    {
+        return $this->creditCards;
+    }
+
+    public function addCreditCard(CreditCard $creditCard): static
+    {
+        if (!$this->creditCards->contains($creditCard)) {
+            $this->creditCards->add($creditCard);
+            $creditCard->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCreditCard(CreditCard $creditCard): static
+    {
+        if ($this->creditCards->removeElement($creditCard)) {
+            // set the owning side to null (unless already changed)
+            if ($creditCard->getOwner() === $this) {
+                $creditCard->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getGender(): ?Gender
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?Gender $gender): static
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getPhone(): ?Phone
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(Phone $phone): static
+    {
+        // set the owning side of the relation if necessary
+        if ($phone->getOwner() !== $this) {
+            $phone->setOwner($this);
+        }
+
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getEmail(): ?Email
+    {
+        return $this->email;
+    }
+
+    public function setEmail(Email $email): static
+    {
+        // set the owning side of the relation if necessary
+        if ($email->getOwner() !== $this) {
+            $email->setOwner($this);
+        }
+
+        $this->email = $email;
+
+        return $this;
     }
 }

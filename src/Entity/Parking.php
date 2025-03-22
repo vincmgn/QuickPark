@@ -22,7 +22,7 @@ class Parking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?int $id = null;
 
     #[ORM\Column]
@@ -40,11 +40,10 @@ class Parking
      * @var Collection<int, Booking>
      */
     #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'parking')]
-    #[Groups(["parking"])]
     private Collection $bookings;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["parking"])]
+    #[Groups(["parking", "user_booking"])]
     #[Assert\NotBlank]
     #[Assert\NotNull]
     #[Assert\Length(
@@ -67,8 +66,12 @@ class Parking
     #[ORM\Column(type: 'geography')]
     #[Assert\NotNull]
     #[Assert\Type(type: SpatialInterface::class, message: 'The location must be a valid spatial object')]
-    #[Groups(["parking"])]
+    #[Groups(["parking", "user_booking"])]
     private ?SpatialInterface $location = null;
+
+    #[ORM\ManyToOne(inversedBy: 'parkings')]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    private ?User $owner = null;
 
     public static function validateLocation(self $object, ExecutionContextInterface $context): void
     {
@@ -204,6 +207,18 @@ class Parking
     public function setLocation(SpatialInterface $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }
