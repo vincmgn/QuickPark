@@ -56,45 +56,39 @@ final class PriceController extends AbstractController
      */
     public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        // Deserialize the Price entity
-        $price = $serializerInterface->deserialize($request->getContent(), Price::class, 'json');
+        $data = json_decode($request->getContent(), true);
+        $parkingId = $data['parking'] ?? null;
 
-        // Get the parking ID from the request (if provided)
-        $parkingId = $price->getParking()?->getId();
-
-        // Fetch the associated Parking entity from the database by ID
-        if ($parkingId) {
-            $parking = $entityManagerInterface->getRepository(Parking::class)->find($parkingId);
-
-            // Ensure the parking exists and has an owner
-            if (!$parking || !$parking->getOwner()) {
-                return new JsonResponse(['error' => 'Parking must have an owner'], JsonResponse::HTTP_BAD_REQUEST);
-            }
-
-            // Set the parking on the Price entity (with the owner set)
-            $price->setParking($parking);
-        } else {
+        if (!$parkingId) {
             return new JsonResponse(['error' => 'Parking ID is required'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        // Validate the Price entity
+        $parking = $entityManagerInterface->getRepository(Parking::class)->find($parkingId);
+
+        if (!$parking || !$parking->getOwner()) {
+            return new JsonResponse(['error' => 'Parking not found or must have an owner'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $price = $serializerInterface->deserialize($request->getContent(), Price::class, 'json');
+        $price->setParking($parking);
+
+        $now = new \DateTime();
+        $price->setCreatedAt($now);
+        $price->setUpdatedAt($now);
+
         $errors = $validator->validate($price);
         if (count($errors) > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
-        // Persist the Price entity
         $entityManagerInterface->persist($price);
         $entityManagerInterface->flush();
 
-        // Invalidate cache
         $cache->invalidateTags(["Price"]);
 
-        // Serialize the Price to return in the response
         $jsonPrice = $serializerInterface->serialize($price, 'json', ['groups' => ['booking', 'parking', 'user_booking']]);
 
-        // Generate the location for the newly created Price entity
-        $location = $urlGenerator->generate('price_get', ['id' => $price->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate('api_price_get', ['id' => $price->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonPrice, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
