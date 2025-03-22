@@ -11,16 +11,20 @@ services:
         autowire: true
 
     App\:
-        resource: '../src/*'
+        resource: "../src/*"
         exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Kernel.php'
-            - '../src/Tests/'
-            
+            - "../src/DependencyInjection/"
+            - "../src/Kernel.php"
+            - "../src/Tests/"
+
     App\Services\IdentifierValueResolver:
         tags: ["controller.argument_value_resolver"]
 
     App\Serializer\Normalizer\AutoDiscoveryNormalizer:
         tags: [serializer.normalizer]
+
+    App\Serializer\Denormalizer\DateIntervalDenormalizer:
+        tags: [serializer.normalizer]
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

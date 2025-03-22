@@ -17,7 +17,7 @@ class Price
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user_booking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?int $id = null;
 
     #[ORM\Column]
@@ -36,15 +36,18 @@ class Price
     private ?\DateInterval $duration = null;
     public static function validateDuration($object, ExecutionContextInterface $context)
     {
-        if ($object->duration && $object->duration->h === 0 && $object->duration->i === 0 && $object->duration->s === 0) {
+        // Check if the duration has any time component
+        if ($object->duration && ($object->duration->h === 0 && $object->duration->i === 0 && $object->duration->d === 0)) {
+            // Here you might want to check for a minimum duration in hours or minutes
             $context->buildViolation('The duration must be greater than 0 minute.')
                 ->atPath('duration')
                 ->addViolation();
         }
     }
 
-    #[ORM\ManyToOne(inversedBy: 'prices')]
+    #[ORM\ManyToOne(inversedBy: 'prices', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["price_parking"])]
     private ?Parking $parking = null;
 
     #[ORM\Column(length: 255)]

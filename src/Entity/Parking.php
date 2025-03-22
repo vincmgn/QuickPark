@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use LongitudeOne\Spatial\PHP\Types\Geography\Point;
 use Symfony\Component\Serializer\Annotation\Groups;
 use LongitudeOne\Spatial\PHP\Types\SpatialInterface;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -33,7 +34,8 @@ class Parking
      * @var Collection<int, Price>
      */
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'parking', orphanRemoval: true)]
-    #[Groups(["parking"])]
+    #[Groups(["parking_prices"])]
+    #[SerializedName('prices')]
     private Collection $prices;
 
     /**

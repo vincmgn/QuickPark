@@ -24,28 +24,7 @@ final class ParkingController extends AbstractController
     /**
      * Get all parkings
      */
-    public function index(ParkingRepository $parkingRepository, SerializerInterface $serializerInterface): JsonResponse
-    {
-        $parking = $parkingRepository->findAll();
-        $jsonParking = $serializerInterface->serialize($parking, 'json', ["groups" => ["parking", "stats"]]);
-
-        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
-    }
-
-    #[Route('/{id}', name: 'get', methods: ['GET'])]
-    #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
-    /**
-     * Get a specific parking by ID
-     */
-    public function get(Parking $parking, SerializerInterface $serializerInterface): JsonResponse
-    {
-        $jsonParking = $serializerInterface->serialize($parking, 'json');
-
-        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
-    }
-
-    #[Route('s', name: 'parkings_get', methods: ['GET'])]
-    public function getParkings(
+    public function index(
         ParkingRepository $parkingRepository,
         SerializerInterface $serializerInterface,
         Request $request,
@@ -61,7 +40,7 @@ final class ParkingController extends AbstractController
             $limit
         );
 
-        $jsonParkings = $serializerInterface->serialize($pagination->getItems(), 'json');
+        $jsonParkings = $serializerInterface->serialize($pagination->getItems(), 'json', ['groups' => ['parking']]);
         $totalItems = $pagination->getTotalItemCount();
         $response = [
             'data' => json_decode($jsonParkings),
@@ -72,5 +51,17 @@ final class ParkingController extends AbstractController
 
         $jsonResponse = json_encode($response);
         return new JsonResponse($jsonResponse, JsonResponse::HTTP_OK, [], true);
+    }
+
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
+    #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    /**
+     * Get a specific parking by ID
+     */
+    public function get(Parking $parking, SerializerInterface $serializerInterface): JsonResponse
+    {
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking']]);
+
+        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
 }

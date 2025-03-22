@@ -57,7 +57,16 @@ class AutoDiscoveryNormalizer implements NormalizerInterface
 
     public function supportsNormalization($data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof Gender && $format === 'json';
+        return $data instanceof Gender && $format === 'json'
+            || $data instanceof Booking && $format === 'json'
+            || $data instanceof CreditCard && $format === 'json'
+            || $data instanceof Email && $format === 'json'
+            || $data instanceof Paiement && $format === 'json'
+            || $data instanceof Parking && $format === 'json'
+            || $data instanceof Phone && $format === 'json'
+            || $data instanceof Price && $format === 'json'
+            || $data instanceof User &&
+            $format === 'json';
     }
 
     public function getSupportedTypes(?string $format): array
@@ -69,7 +78,7 @@ class AutoDiscoveryNormalizer implements NormalizerInterface
             Gender::class => true,
             Paiement::class => true,
             Parking::class => true,
-            Phone::class,
+            Phone::class => true,
             Price::class => true,
             User::class => true,
         ];
