@@ -15,13 +15,13 @@ class Phone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user"])]
+    #[Groups(["user", "phone"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
-    #[Groups(["user"])]
+    #[Groups(["user", "phone"])]
     #[Assert\Length(
         min: 10,
         max: 25,
@@ -36,10 +36,11 @@ class Phone
 
     #[ORM\ManyToOne(inversedBy: 'phones')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["phone"])]
     private ?Status $status = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(["user"])]
+    #[Groups(["user", "phone"])]
     private ?\DateTimeImmutable $verifiedAt = null;
 
     #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist', 'remove'])]
