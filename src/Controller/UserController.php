@@ -36,7 +36,7 @@ final class UserController extends AbstractController
     private UserRepository $userRepository;
     private BookingRepository $bookingRepository;
     private TokenStorageInterface $tokenStorage;
-    private const UNAUTHORIZED_DELETE = "You are not allowed to do this action.";
+    private const UNAUTHORIZED_ACTION = "You are not allowed to do this action.";
 
     public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, BookingRepository $bookingRepository, TokenStorageInterface $tokenStorage)
     {
@@ -75,16 +75,15 @@ final class UserController extends AbstractController
         /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
         if (null === $token) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
         $currentUser = $token->getUser();
 
         if (!$currentUser instanceof User) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $user = $this->userRepository->findOneBy(['id' => $uuid]);
-
         if ($user === null) {
             return new JsonResponse(self::USER_NOT_FOUND, JsonResponse::HTTP_NOT_FOUND);
         }
@@ -110,12 +109,12 @@ final class UserController extends AbstractController
         /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
         if (null === $token) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
         $currentUser = $token->getUser();
 
         if (!$currentUser instanceof User) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         /** @var ?User $user */
@@ -177,12 +176,12 @@ final class UserController extends AbstractController
         /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
         if (null === $token) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
         $currentUser = $token->getUser();
 
         if (!$currentUser instanceof User) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $user = $this->userRepository->findOneBy(['id' => $uuid]);
@@ -243,12 +242,12 @@ final class UserController extends AbstractController
         /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
         if (null === $token) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
         $currentUser = $token->getUser();
 
         if (!$currentUser instanceof User) {
-            throw new AccessDeniedException(self::UNAUTHORIZED_DELETE);
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $user = $this->userRepository->findOneBy(['id' => $uuid]);

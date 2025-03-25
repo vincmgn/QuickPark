@@ -15,7 +15,10 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/credit_card', name: 'api_credit_card_')]
 #[OA\Tag(name: 'CreditCard')]
@@ -23,6 +26,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class CreditCardController extends AbstractController
 {
+    private TokenStorageInterface $tokenStorage;
+    private const UNAUTHORIZED_ACTION = "You are not allowed to do this action.";
+    public function __construct(TokenStorageInterface $tokenStorage)
+    {
+        $this->tokenStorage = $tokenStorage;
+    }
+
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: CreditCard::class))]
     /**
@@ -54,7 +64,7 @@ final class CreditCardController extends AbstractController
 
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: CreditCard::class))]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe", "owner_id" => "1f009bb6-0801-6b66-8bf2-1986f39b9d2e"]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe"]))]
     /**
      * Add a new credit card
      */
@@ -62,25 +72,19 @@ final class CreditCardController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $ownerId = $data['owner_id'] ?? null;
-        $ownerName = $data['owner_name'] ?? null;
-
-        if (!$ownerId) {
-            return new JsonResponse('The owner_id field is required', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        /** @var ?User $currentUser */
+        $token = $this->tokenStorage->getToken();
+        if (null === $token) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
-
-        $owner = $entityManagerInterface->getRepository(User::class)->find($ownerId);
-        if (!$owner) {
-            return new JsonResponse('The owner does not exist', JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
+        $currentUser = $token->getUser();
 
         $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json');
-        $creditCard->setOwner($owner);
-        $creditCard->setOwnerName($ownerName);
+        $creditCard->setOwner($currentUser);
+        $creditCard->setOwnerName($data['owner_name']);
 
-        $now = new \DateTime();
-        $creditCard->setCreatedAt($now);
-        $creditCard->setUpdatedAt($now);
+        $creditCard->setCreatedAt(new \DateTimeImmutable());
+        $creditCard->setUpdatedAt(new \DateTime());
 
         $errors = $validator->validate($creditCard);
         if ($errors->count() > 0) {
@@ -99,40 +103,25 @@ final class CreditCardController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe", "owner_id" => "1f009bb6-0801-6b66-8bf2-1986f39b9d2e"]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe"]))]
     /**
      * Update a credit card
      */
     public function update(Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        /** @var ?User $currentUser */
+        $token = $this->tokenStorage->getToken();
+        if (null === $token) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        $currentUser = $token->getUser();
 
-        $ownerId = $data['owner_id'] ?? null;
-
-        if (!$ownerId) {
-            return new JsonResponse('The owner_id field is required', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $owner = $entityManagerInterface->getRepository(User::class)->find($ownerId);
-
-        if (!$owner) {
-            return new JsonResponse('The owner does not exist', JsonResponse::HTTP_BAD_REQUEST, [], true);
-        }
-
-        $creditCard->setOwner($owner);
-
-        if (isset($data['number'])) {
-            $creditCard->setNumber($data['number']);
-        }
-
-        if (isset($data['expirationDate'])) {
-            $creditCard->setExpirationDate(new \DateTime($data['expirationDate']));
-        }
-
-        if (isset($data['owner_name'])) {
-            $creditCard->setOwnerName($data['owner_name']);
-        }
-
+        $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $creditCard]);
+        $creditCard->setOwner($currentUser);
         $creditCard->setUpdatedAt(new \DateTime());
 
         $errors = $validator->validate($creditCard);
