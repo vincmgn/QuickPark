@@ -44,8 +44,10 @@ final class EmailController extends AbstractController
      */
     public function index(EmailRepository $emailRepository, SerializerInterface $serializerInterface): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $email = $emailRepository->findAll();
-        $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email']]);
+        $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email', 'user']]);
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -56,7 +58,7 @@ final class EmailController extends AbstractController
      */
     public function get(Email $email, SerializerInterface $serializerInterface): JsonResponse
     {
-        $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email']]);
+        $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email', 'user']]);
 
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }

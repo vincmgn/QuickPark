@@ -2,21 +2,22 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Gender;
 use OpenApi\Attributes as OA;
 use App\Repository\GenderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Contracts\Cache\ItemInterface;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/gender', name: 'api_gender_')]
 #[OA\Tag(name: 'Gender')]
@@ -58,7 +59,7 @@ final class GenderController extends AbstractController
     /**
      * Add a new gender
      */
-    public function add(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
         $gender = $serializerInterface->deserialize($request->getContent(), Gender::class, 'json');
         $errors = $validator->validate($gender);
@@ -100,12 +101,23 @@ final class GenderController extends AbstractController
     /**
      * Delete a specific gender by ID
      */
-    public function delete(Gender $gender, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(Gender $gender, EntityManagerInterface $entityManager, TagAwareCacheInterface $cache): JsonResponse
     {
-        $entityManagerInterface->remove($gender);
-        $entityManagerInterface->flush();
+        $users = $entityManager->getRepository(User::class)->findBy(['gender' => $gender]);
+
+        foreach ($users as $user) {
+            $user->setGender(null);
+            $entityManager->persist($user);
+        }
+
+        $entityManager->flush();
+
+        $entityManager->remove($gender);
+        $entityManager->flush();
+
         $cache->invalidateTags(["Gender"]);
 
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

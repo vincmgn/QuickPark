@@ -14,10 +14,11 @@ class Status
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["status"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "status"])]
     private ?string $name = null;
 
     /**

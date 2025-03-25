@@ -72,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: CreditCard::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $creditCards;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[Groups(["user"])]
     #[Gedmo\Versioned]
     private ?Gender $gender = null;
