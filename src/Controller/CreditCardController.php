@@ -2,15 +2,17 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\CreditCard;
 use OpenApi\Attributes as OA;
 use App\Repository\CreditCardRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,39 +54,93 @@ final class CreditCardController extends AbstractController
 
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: CreditCard::class))]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2021-12-31 00:00:00"]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe", "owner_id" => "1f009bb6-0801-6b66-8bf2-1986f39b9d2e"]))]
     /**
      * Add a new credit card
      */
-    public function add(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
+    public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
+
+        $ownerId = $data['owner_id'] ?? null;
+        $ownerName = $data['owner_name'] ?? null;
+
+        if (!$ownerId) {
+            return new JsonResponse('The owner_id field is required', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $owner = $entityManagerInterface->getRepository(User::class)->find($ownerId);
+        if (!$owner) {
+            return new JsonResponse('The owner does not exist', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
         $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json');
+        $creditCard->setOwner($owner);
+        $creditCard->setOwnerName($ownerName);
+
+        $now = new \DateTime();
+        $creditCard->setCreatedAt($now);
+        $creditCard->setUpdatedAt($now);
+
         $errors = $validator->validate($creditCard);
         if ($errors->count() > 0) {
-            return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+            return new JsonResponse($serializerInterface->serialize($errors, 'json',), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
+
         $entityManagerInterface->persist($creditCard);
         $entityManagerInterface->flush();
 
-        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json');
-        $location = $urlGenerator->generate('credit_card_get', ['id' => $creditCard->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $cache->invalidateTags(['CreditCard']);
+
+        $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', ['groups' => ['user_booking', 'user']]);
+        $location = $urlGenerator->generate('api_credit_card_get', ['id' => $creditCard->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         return new JsonResponse($jsonCreditCard, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2021-12-31 00:00:00"]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe", "owner_id" => "1f009bb6-0801-6b66-8bf2-1986f39b9d2e"]))]
     /**
      * Update a credit card
      */
-    public function update(Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator): JsonResponse
+    public function update(Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json');
+        $data = json_decode($request->getContent(), true);
+
+        $ownerId = $data['owner_id'] ?? null;
+
+        if (!$ownerId) {
+            return new JsonResponse('The owner_id field is required', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $owner = $entityManagerInterface->getRepository(User::class)->find($ownerId);
+
+        if (!$owner) {
+            return new JsonResponse('The owner does not exist', JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $creditCard->setOwner($owner);
+
+        if (isset($data['number'])) {
+            $creditCard->setNumber($data['number']);
+        }
+
+        if (isset($data['expirationDate'])) {
+            $creditCard->setExpirationDate(new \DateTime($data['expirationDate']));
+        }
+
+        if (isset($data['owner_name'])) {
+            $creditCard->setOwnerName($data['owner_name']);
+        }
+
+        $creditCard->setUpdatedAt(new \DateTime());
+
         $errors = $validator->validate($creditCard);
         if ($errors->count() > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
         $entityManagerInterface->flush();
+        $cache->invalidateTags(['CreditCard']);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
@@ -94,10 +150,11 @@ final class CreditCardController extends AbstractController
     /**
      * Delete a credit card
      */
-    public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface): JsonResponse
+    public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
         $entityManagerInterface->remove($creditCard);
         $entityManagerInterface->flush();
+        $cache->invalidateTags(['CreditCard']);
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }

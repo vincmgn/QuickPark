@@ -28,7 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[OA\Property(type: "string", format: "uuid", description: "The unique identifier of the user")]
-    #[Groups(["user"])]
+    #[Groups(["user", 'credit_card_detail'])]
     private ?Uuid $id = null;
 
     /**
@@ -45,7 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(["user"])]
+    #[Groups(["user", 'credit_card_detail'])]
     #[Gedmo\Versioned]
     private ?string $username = null;
 
@@ -94,7 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->bookings = new ArrayCollection();
         $this->creditCards = new ArrayCollection();
     }
-    
+
 
     public function getId(): ?Uuid
     {
@@ -107,7 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-    
+
 
     /**
      * A visual identifier that represents this user.
