@@ -16,21 +16,22 @@ class Email
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user"])]
+    #[Groups(["user", "email"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'emails')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["email"])]
     private ?Status $status = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email(message: 'The email "{{ value }}" is not a valid email address.')]
-    #[Groups(["user"])]
+    #[Groups(["user", "email"])]
     private ?string $email = null;    
 
     #[ORM\Column(nullable: true)]
-    #[Groups(["user"])]
+    #[Groups(["user", "email"])]
     private ?\DateTimeImmutable $verifiedAt = null;
 
     #[ORM\OneToOne(inversedBy: 'email', cascade: ['persist', 'remove'])]
