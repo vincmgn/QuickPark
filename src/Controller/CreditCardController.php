@@ -146,7 +146,6 @@ final class CreditCardController extends AbstractController
     {
         $entityManagerInterface->remove($creditCard);
         $entityManagerInterface->flush();
-        
         $cache->invalidateTags(['CreditCard']);
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
