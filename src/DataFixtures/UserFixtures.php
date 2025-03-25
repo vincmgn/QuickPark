@@ -62,6 +62,16 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($adminUser);
         $this->addReference('vinvin', $adminUser);
 
+        $normalUser = new User();
+        $normalUser->setRoles(['ROLE_USER']);
+        $normalUser->setPassword($this->userPasswordHasher->hashPassword($normalUser, 'password'));
+        $normalUser->setUsername('user');
+        $normalUser->setGender($maleGender);
+        $normalUser->setCreatedAt($now);
+        $normalUser->setUpdatedAt($now);
+        $manager->persist($normalUser);
+        $this->addReference('user', $normalUser);
+
         $manager->flush(); 
     }
 
