@@ -21,14 +21,13 @@ class Email
 
     #[ORM\ManyToOne(inversedBy: 'emails')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["email"])]
     private ?Status $status = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email(message: 'The email "{{ value }}" is not a valid email address.')]
     #[Groups(["user", "email"])]
-    private ?string $email = null;    
+    private ?string $email = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups(["user", "email"])]

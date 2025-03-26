@@ -98,6 +98,7 @@ class Parking
 
     #[ORM\ManyToOne(inversedBy: 'parkings')]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    #[Groups(["parking"])]
     private ?User $owner = null;
 
     public function __construct()

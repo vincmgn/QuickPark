@@ -32,11 +32,10 @@ class Phone
         pattern: '/^\+?[0-9\s\-]{10,25}$/',
         message: 'The phone number is not valid'
     )]
-    private ?string $number = null;    
+    private ?string $number = null;
 
     #[ORM\ManyToOne(inversedBy: 'phones')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["phone"])]
     private ?Status $status = null;
 
     #[ORM\Column(nullable: true)]
@@ -45,7 +44,7 @@ class Phone
 
     #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
-    private ?User $owner = null;    
+    private ?User $owner = null;
 
     public function getId(): ?int
     {
