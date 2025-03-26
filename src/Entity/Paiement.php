@@ -20,37 +20,36 @@ class Paiement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user_booking"])]
+    #[Groups(["user_booking", "paiement"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
-    #[Groups(["user_booking"])]
+    #[ORM\JoinColumn(name: "credit_card_id", referencedColumnName: "id", nullable: true, onDelete: "SET NULL")]
+    #[Groups(["user_booking", "paiement"])]
     private ?CreditCard $creditCard = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["parking"])]
+    #[ORM\JoinColumn(name: "status_id", nullable: false)]
     #[Gedmo\Versioned]
     private ?Status $status = null;
 
-    #[ORM\Column(length: 16)]
-    #[Assert\NotBlank]
-    #[Assert\NotNull]
-    #[Assert\Length(
-        min: 16,
-        max: 16,
-        exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
-    )]
-    #[Assert\Regex(
-        pattern: '/^\d+$/',
-        message: 'The credit card number must contain only digits'
-    )]
-    #[Groups(["user_booking"])]
-    private ?string $creditCardNumber = null;
+    // #[ORM\Column(length: 16)]
+    // #[Assert\NotBlank]
+    // #[Assert\NotNull]
+    // #[Assert\Length(
+    //     min: 16,
+    //     max: 16,
+    //     exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
+    // )]
+    // #[Assert\Regex(
+    //     pattern: '/^\d+$/',
+    //     message: 'The credit card number must contain only digits'
+    // )]
+    // #[Groups(["user_booking", "paiement"])]
+    // private ?string $creditCardNumber = null;
 
     #[ORM\Column]
-    #[Groups(["booking", "user_booking"])]
+    #[Groups(["booking", "user_booking", "paiement"])]
     #[Assert\NotNull]
     #[Assert\Type('float')]
     #[Assert\GreaterThan(0, message: "The total price must be greater than 0.")]
@@ -67,6 +66,7 @@ class Paiement
         $this->booking = new ArrayCollection();
     }
 
+    #[Groups(["paiement"])]
     public function getId(): ?int
     {
         return $this->id;
@@ -96,17 +96,17 @@ class Paiement
         return $this;
     }
 
-    public function getCreditCardNumber(): ?string
-    {
-        return $this->creditCardNumber;
-    }
+    // public function getCreditCardNumber(): ?string
+    // {
+    //     return $this->creditCardNumber;
+    // }
 
-    public function setCreditCardNumber(string $creditCardNumber): static
-    {
-        $this->creditCardNumber = $creditCardNumber;
+    // public function setCreditCardNumber(string $creditCardNumber): static
+    // {
+    //     $this->creditCardNumber = $creditCardNumber;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function getTotalPrice(): ?float
     {

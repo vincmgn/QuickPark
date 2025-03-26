@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Parking;
 use OpenApi\Attributes as OA;
 use App\Repository\ParkingRepository;
@@ -135,6 +136,17 @@ final class ParkingController extends AbstractController
      */
     public function edit(Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
+        /** @var ?User $currentUser */
+        $token = $this->tokenStorage->getToken();
+        if (null === $token) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        $currentUser = $token->getUser();
+
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $data = json_decode($request->getContent(), true);
 
         $parking->setIsEnabled($data['isEnabled']);

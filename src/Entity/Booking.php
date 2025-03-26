@@ -53,8 +53,7 @@ class Booking
     #[Groups(["booking"])]
     private ?Status $status = null;
 
-    #[ORM\ManyToOne(inversedBy: 'booking')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'booking', cascade: ['persist'])]
     #[Groups(["booking", "parking", "user_booking"])]
     private ?Paiement $paiement = null;
 
