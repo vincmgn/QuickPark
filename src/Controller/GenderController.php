@@ -46,8 +46,14 @@ final class GenderController extends AbstractController
     /**
      * Get a specific gender by ID
      */
-    public function get(Gender $gender, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, Gender $gender, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $gender = $entityManagerInterface->getRepository(Gender::class)->find($id);
+
+        if (!$gender) {
+            return new JsonResponse(['message' => 'Gender not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $jsonGender = $serializerInterface->serialize($gender, 'json');
 
         return new JsonResponse($jsonGender, JsonResponse::HTTP_OK, [], true);
@@ -76,15 +82,21 @@ final class GenderController extends AbstractController
         return new JsonResponse($jsonGender, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
      * Update an existing gender by ID
      *
      */
-    public function update(Gender $gender, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Gender $gender, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $gender = $entityManagerInterface->getRepository(Gender::class)->find($id);
+
+        if (!$gender) {
+            return new JsonResponse(['message' => 'Gender not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $gender = $serializerInterface->deserialize($request->getContent(), Gender::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $gender]);
         $errors = $validator->validate($gender);
         if ($errors->count() > 0) {
@@ -102,19 +114,25 @@ final class GenderController extends AbstractController
      * Delete a specific gender by ID
      */
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Gender $gender, EntityManagerInterface $entityManager, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, Gender $gender, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        $users = $entityManager->getRepository(User::class)->findBy(['gender' => $gender]);
+        $gender = $entityManagerInterface->getRepository(Gender::class)->find($id);
+
+        if (!$gender) {
+            return new JsonResponse(['message' => 'Gender not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $users = $entityManagerInterface->getRepository(User::class)->findBy(['gender' => $gender]);
 
         foreach ($users as $user) {
             $user->setGender(null);
-            $entityManager->persist($user);
+            $entityManagerInterface->persist($user);
         }
 
-        $entityManager->flush();
+        $entityManagerInterface->flush();
 
-        $entityManager->remove($gender);
-        $entityManager->flush();
+        $entityManagerInterface->remove($gender);
+        $entityManagerInterface->flush();
 
         $cache->invalidateTags(["Gender"]);
 
