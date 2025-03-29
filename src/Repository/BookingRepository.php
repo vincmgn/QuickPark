@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Entity\Status;
 use App\Entity\Booking;
+use App\Types\DataStatus;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -22,9 +24,9 @@ class BookingRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('b')
             ->join('b.parking', 'p')
             ->where('p.owner = :user')
-            ->andWhere('b.status = :status')
-            ->setParameter('user', $user)
-            ->setParameter('status', 'active')
+            ->andWhere('b.dataStatus = :dataStatus')
+            ->setParameter('user', $user->getId())
+            ->setParameter('dataStatus', DataStatus::ACTIVE)
             ->getQuery()
             ->getResult();
     }   

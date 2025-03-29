@@ -78,12 +78,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Gedmo\Versioned]
     private ?Gender $gender = null;
 
-    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove'])]
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove', 'persist'])]
     #[Groups(["user"])]
     #[Gedmo\Versioned]
     private ?Phone $phone = null;
 
-    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove'])]
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove', 'persist'])]
     #[Groups(["user"])]
     #[Gedmo\Versioned]
     private ?Email $email = null;
@@ -95,7 +95,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->bookings = new ArrayCollection();
         $this->creditCards = new ArrayCollection();
     }
-
 
     public function getId(): ?Uuid
     {
