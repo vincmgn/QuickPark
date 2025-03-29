@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Price;
 use App\Entity\Parking;
 use OpenApi\Attributes as OA;
@@ -16,6 +17,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/price', name: 'api_price_')]
 #[OA\Tag(name: 'Price')]
@@ -23,6 +25,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class PriceController extends AbstractController
 {
+    private TokenStorageInterface $tokenStorage;
+    private const UNAUTHORIZED_ACTION = "You are not allowed to do this action.";
+    public function __construct(TokenStorageInterface $tokenStorage)
+    {
+        $this->tokenStorage = $tokenStorage;
+    }
+
+
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Price::class))]
     /**
@@ -41,8 +51,14 @@ final class PriceController extends AbstractController
     /**
      * Get a specific price by ID
      */
-    public function get(Price $price, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, Price $price, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $price = $entityManagerInterface->getRepository(Price::class)->find($id);
+
+        if (!$price) {
+            return new JsonResponse(['message' => 'Price not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $jsonPrice = $serializerInterface->serialize($price, 'json', ['groups' => ['booking', 'parking',  'user_booking']]);
 
         return new JsonResponse($jsonPrice, JsonResponse::HTTP_OK, [], true);
@@ -67,6 +83,17 @@ final class PriceController extends AbstractController
 
         if (!$parking || !$parking->getOwner()) {
             return new JsonResponse(['error' => 'Parking not found or must have an owner'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($parking->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        $price = $entityManagerInterface->getRepository(Price::class)->findOneBy(['parking' => $parking]);
+        if ($price) {
+            return new JsonResponse(['message' => 'Price already exists for this parking.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $price = $serializerInterface->deserialize($request->getContent(), Price::class, 'json');
@@ -100,9 +127,25 @@ final class PriceController extends AbstractController
     /**
      * Update a price by ID
      */
-    public function update(Price $price, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Price $price, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        $price = $entityManagerInterface->getRepository(Price::class)->find($id);
+
+        $owner = $price->getOwner();
+
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+
+        if (null === $token || !$currentUser instanceof User || ($owner !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION . ' Either you are unauthorized, or the parking provided is not yours.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        if (!$price) {
+            return new JsonResponse(['message' => 'Price not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
 
         if (isset($data['price'])) {
             $price->setPrice($data['price']);
@@ -147,8 +190,22 @@ final class PriceController extends AbstractController
      * Delete a price by ID
      * This is a hard and definitive delete because we don't care about keeping prices data
      */
-    public function delete(Price $price, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, Price $price, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $price = $entityManagerInterface->getRepository(Price::class)->find($id);
+
+        if (!$price) {
+            return new JsonResponse(['message' => 'Price not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $owner = $price->getOwner();
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($owner !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $entityManagerInterface->remove($price);
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Price"]);

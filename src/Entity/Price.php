@@ -111,4 +111,9 @@ class Price
 
         return $this;
     }
+
+    public function getOwner(): ?User
+    {
+        return $this->parking ? $this->parking->getOwner() : null;
+    }
 }
