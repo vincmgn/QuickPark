@@ -62,15 +62,25 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($adminUser);
         $this->addReference('vinvin', $adminUser);
 
-        $normalUser = new User();
-        $normalUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
-        $normalUser->setPassword($this->userPasswordHasher->hashPassword($normalUser, 'password'));
-        $normalUser->setUsername('user');
-        $normalUser->setGender($maleGender);
-        $normalUser->setCreatedAt($now);
-        $normalUser->setUpdatedAt($now);
-        $manager->persist($normalUser);
-        $this->addReference('user', $normalUser);
+        $demoAdminUser = new User();
+        $demoAdminUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
+        $demoAdminUser->setPassword($this->userPasswordHasher->hashPassword($demoAdminUser, 'password'));
+        $demoAdminUser->setUsername('adminDemo');
+        $demoAdminUser->setGender($maleGender);
+        $demoAdminUser->setCreatedAt($now);
+        $demoAdminUser->setUpdatedAt($now);
+        $manager->persist($demoAdminUser);
+        $this->addReference('adminDemo', $demoAdminUser);
+
+        $demoUser = new User();
+        $demoUser->setRoles(['ROLE_USER']);
+        $demoUser->setPassword($this->userPasswordHasher->hashPassword($demoUser, 'password'));
+        $demoUser->setUsername('userDemo');
+        $demoUser->setGender($maleGender);
+        $demoUser->setCreatedAt($now);
+        $demoUser->setUpdatedAt($now);
+        $manager->persist($demoUser);
+        $this->addReference('userDemo', $demoUser);
 
         $manager->flush(); 
     }

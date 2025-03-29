@@ -68,8 +68,13 @@ php bin/console doctrine:fixtures:load
 
 7. Before using our routes, you need to start with the **login** route where you will log in with the following credentials:
 
--   **username**: 'user'
--   **password**: 'password'
+- Admin:
+    -   **username**: 'adminDemo'
+    -   **password**: 'password'
+
+- User:
+    -   **username**: 'userDemo'
+    -   **password**: 'password'
 
 Then you need to copy the text from the `token` field:
 
