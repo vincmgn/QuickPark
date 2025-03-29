@@ -33,7 +33,7 @@ class Email
     #[Groups(["user", "email"])]
     private ?\DateTimeImmutable $verifiedAt = null;
 
-    #[ORM\OneToOne(inversedBy: 'email', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'email', cascade: ['persist'])]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
     private ?User $owner = null;
 

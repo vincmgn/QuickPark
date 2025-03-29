@@ -44,6 +44,8 @@ final class PhoneController extends AbstractController
      */
     public function index(PhoneRepository $phoneRepository, SerializerInterface $serializerInterface): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $phone = $phoneRepository->findAll();
         $jsonPhone = $serializerInterface->serialize($phone, 'json', ['groups' => ['phone']]);
         return new JsonResponse($jsonPhone, JsonResponse::HTTP_OK, [], true);
@@ -54,8 +56,13 @@ final class PhoneController extends AbstractController
     /**
      * Get a specific phone by ID
      */
-    public function get(Phone $phone, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $phone = $entityManagerInterface->getRepository(Phone::class)->find($id);
+        if (null === $phone) {
+            return new JsonResponse(['message' => 'Phone not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+        
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -64,7 +71,6 @@ final class PhoneController extends AbstractController
         }
 
         $jsonPhone = $serializerInterface->serialize($phone, 'json', ['groups' => ['phone']]);
-
         return new JsonResponse($jsonPhone, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -112,8 +118,13 @@ final class PhoneController extends AbstractController
     /**
      * Edit a phone by ID
      */
-    public function update(Phone $phone, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $phone = $entityManagerInterface->getRepository(Phone::class)->find($id);
+        if (!$phone) {
+            return new JsonResponse(['message' => 'Phone not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -124,13 +135,12 @@ final class PhoneController extends AbstractController
         $phone = $serializerInterface->deserialize($request->getContent(), Phone::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $phone]);
         $phone->setUpdatedAt(new \DateTime());
         $errors = $validator->validate($phone);
-
         if (count($errors) > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], false);
         }
+
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Phone"]);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
@@ -142,8 +152,13 @@ final class PhoneController extends AbstractController
      * Delete a phone by ID
      * This is a hard and definitive delete because of GDPR rules
      */
-    public function delete(Phone $phone, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
-    {
+    public function delete(int $id, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    {   
+        $phone = $entityManagerInterface->getRepository(Phone::class)->find($id);
+        if (!$phone) {
+            return new JsonResponse(['message' => 'Phone not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();

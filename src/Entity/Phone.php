@@ -42,7 +42,7 @@ class Phone
     #[Groups(["user", "phone"])]
     private ?\DateTimeImmutable $verifiedAt = null;
 
-    #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist'])]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
     private ?User $owner = null;
 

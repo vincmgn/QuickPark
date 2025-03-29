@@ -78,12 +78,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Gedmo\Versioned]
     private ?Gender $gender = null;
 
-    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove'])]
     #[Groups(["user"])]
     #[Gedmo\Versioned]
     private ?Phone $phone = null;
 
-    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'owner', cascade: ['remove'])]
     #[Groups(["user"])]
     #[Gedmo\Versioned]
     private ?Email $email = null;
