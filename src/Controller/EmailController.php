@@ -56,8 +56,20 @@ final class EmailController extends AbstractController
     /**
      * Get a specific email by ID
      */
-    public function get(Email $email, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $email = $entityManagerInterface->getRepository(Email::class)->find($id);
+        if (!$email) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($email->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email', 'user']]);
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }
@@ -77,7 +89,6 @@ final class EmailController extends AbstractController
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
-        $currentUser = $token->getUser();
 
         $email = $serializerInterface->deserialize($request->getContent(), Email::class, 'json');
         $status = $entityManagerInterface->getRepository(Status::class)->findOneBy(['name' => 'Pending']);
@@ -106,21 +117,17 @@ final class EmailController extends AbstractController
     /**
      * Edit a email by ID
      */
-    public function update(Email $email, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $email = $entityManagerInterface->getRepository(Email::class)->find($id);
+        if (!$email) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-        $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
-
-        if ($email->getOwner() !== $currentUser && $this->isGranted('ROLE_ADMIN')) {
+        if (null === $token || !$currentUser instanceof User || ($email->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
         
@@ -143,8 +150,13 @@ final class EmailController extends AbstractController
     /**
      * Delete a email by ID
      */
-    public function delete(Email $email, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $email = $entityManagerInterface->getRepository(Email::class)->find($id);
+        if (!$email) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
