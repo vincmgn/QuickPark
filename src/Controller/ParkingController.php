@@ -76,20 +76,10 @@ final class ParkingController extends AbstractController
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $parking = new Parking();
+        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json');
         $parking->setOwner($currentUser);
-        $parking->setIsEnabled($data['isEnabled']);
-        $parking->setName($data['name']);
-        $parking->setDescription($data['description']);
-
-        $latitude = $data['location']['latitude'];
-        $longitude = $data['location']['longitude'];
-        $location = new Point($latitude, $longitude);
-        $parking->setLocation($location);
-
         $parking->setCreatedAt(new \DateTimeImmutable());
         $parking->setUpdatedAt(new \DateTime());
-
         $errors = $validator->validate($parking);
         if ($errors->count() > 0) {
             return new JsonResponse(['message' => 'Validation error'], JsonResponse::HTTP_BAD_REQUEST);
@@ -97,9 +87,7 @@ final class ParkingController extends AbstractController
 
         $entityManagerInterface->persist($parking);
         $entityManagerInterface->flush();
-
         $cache->invalidateTags(['Parking']);
-
         $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status']]);
         $location = $urlGenerator->generate('api_parking_get', ['id' => $parking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         return new JsonResponse($jsonParking, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
