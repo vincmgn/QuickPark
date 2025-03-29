@@ -4,7 +4,6 @@ namespace App\DataFixtures;
 
 use Faker\Factory;
 use App\Entity\User;
-use App\Entity\Traits\DataStatus;
 use App\Repository\GenderRepository;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -44,7 +43,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $maleGender = reset($filteredGenders);
 
         $adminUser = new User();
-        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
         $adminUser->setUsername('alexnbl27');
         $adminUser->setGender($maleGender);
@@ -54,7 +53,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $this->addReference('alexnbl27', $adminUser);
 
         $adminUser = new User();
-        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
         $adminUser->setUsername('vinvin');
         $adminUser->setGender($maleGender);
@@ -62,6 +61,16 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $adminUser->setUpdatedAt($now);
         $manager->persist($adminUser);
         $this->addReference('vinvin', $adminUser);
+
+        $normalUser = new User();
+        $normalUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
+        $normalUser->setPassword($this->userPasswordHasher->hashPassword($normalUser, 'password'));
+        $normalUser->setUsername('user');
+        $normalUser->setGender($maleGender);
+        $normalUser->setCreatedAt($now);
+        $normalUser->setUpdatedAt($now);
+        $manager->persist($normalUser);
+        $this->addReference('user', $normalUser);
 
         $manager->flush(); 
     }

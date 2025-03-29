@@ -7,7 +7,11 @@ use App\Entity\Parking;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
 use LongitudeOne\Spatial\PHP\Types\Geography\Point;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(Price::class)]
+#[UsesClass(Parking::class)]
 class PriceTest extends TestCase
 {
     private function getEntity(): Price

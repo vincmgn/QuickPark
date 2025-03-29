@@ -12,9 +12,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[Assert\Callback([self::class, 'validateDates'])]
+#[Gedmo\Loggable]
 class Booking
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,14 +32,17 @@ class Booking
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?Price $price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $endDate = null;
     public static function validateDates(Booking $booking, ExecutionContextInterface $context): void
     {
@@ -51,12 +56,15 @@ class Booking
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking"])]
+    #[Gedmo\Versioned]
     private ?Status $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'booking', cascade: ['persist'])]
     #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?Paiement $paiement = null;
 
+    #[Groups(["booking"])]
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(name: "client_id", referencedColumnName: "id", nullable: false)]
     private ?User $client = null;

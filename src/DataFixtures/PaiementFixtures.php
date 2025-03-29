@@ -41,11 +41,11 @@ class PaiementFixtures extends Fixture implements DependentFixtureInterface
 
             $paiement->setTotalPrice($faker->randomFloat(2, 0, 100));
             $paiement->setCreditCard($randomCreditCard);
-            // if ($randomCreditCard) {
-            //     $paiement->setCreditCardNumber($randomCreditCard->getNumber());
-            // } else {
-            //     $paiement->setCreditCardNumber($faker->creditCardNumber);
-            // }
+            if ($randomCreditCard) {
+                $paiement->setCreditCardNumber($randomCreditCard->getNumber());
+            } else {
+                $paiement->setCreditCardNumber($faker->creditCardNumber);
+            }
 
             $manager->persist($paiement);
 

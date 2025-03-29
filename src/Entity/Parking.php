@@ -22,6 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Parking
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

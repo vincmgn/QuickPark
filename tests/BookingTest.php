@@ -6,8 +6,12 @@ use App\Entity\Booking;
 use App\Entity\Parking;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 use LongitudeOne\Spatial\PHP\Types\Geography\Point;
 
+#[CoversClass(Booking::class)]
+#[UsesClass(Parking::class)]
 class BookingTest extends TestCase
 {
     private function getEntity(): Booking

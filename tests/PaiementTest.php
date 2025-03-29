@@ -5,7 +5,10 @@ namespace App\Tests\Entity;
 use App\Entity\Paiement;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(Paiement::class)]
 class PaiementTest extends TestCase
 {
     private function getEntity(): Paiement

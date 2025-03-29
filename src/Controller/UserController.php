@@ -46,7 +46,7 @@ final class UserController extends AbstractController
         $this->tokenStorage = $tokenStorage;
     }
 
-    #[Route('/{uuid}', name: 'get', methods: ['GET'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: User::class))]
     /**
      * Get a specific user by UUID
@@ -62,7 +62,25 @@ final class UserController extends AbstractController
         return new JsonResponse($jsonUser, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{uuid}', name: 'update', methods: ['PATCH'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/me', name: 'getMe', methods: ['GET'])]
+    #[OA\Response(response: 200, description: 'Success', content: new Model(type: User::class))]
+    /**
+     * Get a specific user by UUID
+     */
+    public function getMe(string $uuid, SerializerInterface $serializerInterface): JsonResponse
+    {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $jsonUser = $serializerInterface->serialize($currentUser, 'json', ["groups" => ["user", "stats"]]);
+        return new JsonResponse($jsonUser, JsonResponse::HTTP_OK, [], true);
+    }
+
+    #[Route('/{id}', name: 'update', methods: ['PATCH'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'User not found')]
@@ -72,8 +90,9 @@ final class UserController extends AbstractController
      */
     public function update(string $uuid, Request $request, SerializerInterface $serializerInterface, ValidatorInterface $validator): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -96,7 +115,7 @@ final class UserController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    #[Route('/{uuid}', name: 'delete', methods: ['DELETE'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\Response(response: 404, description: 'User not found')]
@@ -104,10 +123,11 @@ final class UserController extends AbstractController
     /**
      * Delete a specific user by UUID
      */
-    public function delete(string $uuid, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(string $id, TagAwareCacheInterface $cache): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -118,7 +138,7 @@ final class UserController extends AbstractController
         }
 
         /** @var ?User $user */
-        $user = $this->userRepository->findOneBy(['id' => $uuid]);
+        $user = $this->userRepository->findOneBy(['id' => $id]);
         if ($user === null) {
             return new JsonResponse(self::USER_NOT_FOUND, JsonResponse::HTTP_NOT_FOUND);
         }
@@ -153,11 +173,10 @@ final class UserController extends AbstractController
 
         // Invalidate cache
         $cache->invalidateTags(["User"]);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    #[Route('/{uuid}/bookings', name: 'getUserBookings', methods: ['GET'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/me/bookings', name: 'getUserBookings', methods: ['GET'])]
     #[OA\Response(
         response: 200,
         description: 'Success',
@@ -167,37 +186,24 @@ final class UserController extends AbstractController
         )
     )]
     #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'User not found')]
     /**
      * Get all bookings of a specific user by UUID
      */
     public function getUserBookings(string $uuid, Request $request, SerializerInterface $serializerInterface): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $user = $this->userRepository->findOneBy(['id' => $uuid]);
-
-        if ($user === null) {
-            return new JsonResponse(self::USER_NOT_FOUND, JsonResponse::HTTP_NOT_FOUND);
-        }
-        /** @var Booking[] $bookings */
-        $bookings = $user->getBookings()->toArray();
-
+        $bookings = $currentUser->getBookings()->toArray();
         $jsonBookings = $serializerInterface->serialize($bookings, 'json', ["groups" => ["user_booking", "stats"]]);
         return new JsonResponse($jsonBookings, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('/{uuid}/parkings', name: 'getUserParkings', methods: ['GET'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
-    #[Route('/{uuid}/parkings', name: 'getUserParkings', methods: ['GET'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/me/parkings', name: 'getUserParkings', methods: ['GET'])]
     #[OA\Response(
         response: 200,
         description: 'Success',
@@ -206,24 +212,25 @@ final class UserController extends AbstractController
             items: new OA\Items(new Model(type: Parking::class))
         )
     )]
-    #[OA\Response(response: 404, description: 'User not found')]
     /**
-     * Get all parkings of a specific user by UUID
+     * Get all parkings of a me
      */
     public function getUserParkings(string $uuid, SerializerInterface $serializerInterface): JsonResponse
     {
-        $user = $this->userRepository->findOneBy(['id' => $uuid]);
-        if ($user === null) {
-            return new JsonResponse(self::USER_NOT_FOUND, JsonResponse::HTTP_NOT_FOUND);
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
-        $parkings = $user->getParkings()->toArray();
 
+        $parkings = $currentUser->getParkings()->toArray();
         $jsonParkings = $serializerInterface->serialize($parkings, 'json', ["groups" => ["parking", "stats"]]);
         return new JsonResponse($jsonParkings, JsonResponse::HTTP_OK, [], true);
     }
 
 
-    #[Route('/{uuid}/credit-cards', name: 'getUserCreditCards', methods: ['GET'], requirements: ['uuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/me/credit-cards', name: 'getUserCreditCards', methods: ['GET'])]
     #[OA\Response(
         response: 200,
         description: 'Success',
@@ -233,30 +240,19 @@ final class UserController extends AbstractController
         )
     )]
     #[OA\Response(response: 403, description: 'Forbidden')]
-    #[OA\Response(response: 404, description: 'User not found')]
     /**
      * Get all credit cards of a specific user by UUID
      */
     public function getUserCreditCards(string $uuid, SerializerInterface $serializerInterface): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $user = $this->userRepository->findOneBy(['id' => $uuid]);
-        if ($user === null) {
-            return new JsonResponse(self::USER_NOT_FOUND, JsonResponse::HTTP_NOT_FOUND);
-        }
-        $creditCards = $user->getCreditCards()->toArray();
-
-
+        $creditCards = $currentUser->getCreditCards()->toArray();
         $jsonCreditCards = $serializerInterface->serialize($creditCards, 'json', ["groups" => ["user", "stats"]]);
         return new JsonResponse($jsonCreditCards, JsonResponse::HTTP_OK, [], true);
     }

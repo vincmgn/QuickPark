@@ -5,7 +5,10 @@ namespace App\Tests\Entity;
 use App\Entity\CreditCard;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(CreditCard::class)]
 class CreditCardTest extends TestCase
 {
     private function getEntity(): CreditCard

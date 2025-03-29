@@ -22,13 +22,14 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[OA\Property(type: "string", format: "uuid", description: "The unique identifier of the user")]
-    #[Groups(["user", 'credit_card_detail'])]
+    #[Groups(["user", 'credit_card'])]
     private ?Uuid $id = null;
 
     /**
@@ -45,7 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(["user", 'credit_card_detail'])]
+    #[Groups(["user", 'credit_card'])]
     #[Gedmo\Versioned]
     private ?string $username = null;
 

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Parking;
+use App\Types\DataStatus;
 use OpenApi\Attributes as OA;
 use App\Repository\ParkingRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,34 +39,14 @@ final class ParkingController extends AbstractController
     /**
      * Get all parkings
      */
-    public function index(
-        ParkingRepository $parkingRepository,
-        SerializerInterface $serializerInterface,
-        Request $request,
-        PaginatorInterface $paginator
-    ): JsonResponse {
-        $page = $request->query->getInt('page', 1);
-        $limit = 12;
+    public function index(ParkingRepository $parkingRepository, SerializerInterface $serializerInterface): JsonResponse
+    {
+        $parking = $parkingRepository->findAll();
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ["groups" => ["parking", "stats", "status", "user"]]);
 
-        $query = $parkingRepository->findEnabledParkingsQuery();
-        $pagination = $paginator->paginate(
-            $query,
-            $page,
-            $limit
-        );
-
-        $jsonParkings = $serializerInterface->serialize($pagination->getItems(), 'json', ['groups' => ['parking']]);
-        $totalItems = $pagination->getTotalItemCount();
-        $response = [
-            'data' => json_decode($jsonParkings),
-            'current_page' => $page,
-            'total_pages' => $totalItems > 0 ? ceil($totalItems / $limit) : 1,
-            'total_items' => $totalItems
-        ];
-
-        $jsonResponse = json_encode($response);
-        return new JsonResponse($jsonResponse, JsonResponse::HTTP_OK, [], true);
+        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
+
 
     #[Route('/{id}', name: 'get', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
@@ -74,8 +55,7 @@ final class ParkingController extends AbstractController
      */
     public function get(Parking $parking, SerializerInterface $serializerInterface): JsonResponse
     {
-        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking']]);
-
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status', 'user']]);
         return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -89,21 +69,18 @@ final class ParkingController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        /** @var ?User $currentUser */
-
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
-        $currentUser = $token->getUser();
 
         $parking = new Parking();
         $parking->setOwner($currentUser);
-
         $parking->setIsEnabled($data['isEnabled']);
         $parking->setName($data['name']);
         $parking->setDescription($data['description']);
-
 
         $latitude = $data['location']['latitude'];
         $longitude = $data['location']['longitude'];
@@ -123,7 +100,7 @@ final class ParkingController extends AbstractController
 
         $cache->invalidateTags(['Parking']);
 
-        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking']]);
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status']]);
         $location = $urlGenerator->generate('api_parking_get', ['id' => $parking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         return new JsonResponse($jsonParking, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
@@ -136,39 +113,22 @@ final class ParkingController extends AbstractController
      */
     public function edit(Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User || ($parking->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $data = json_decode($request->getContent(), true);
-
-        $parking->setIsEnabled($data['isEnabled']);
-        $parking->setName($data['name']);
-        $parking->setDescription($data['description']);
-
-        $latitude = $data['location']['latitude'];
-        $longitude = $data['location']['longitude'];
-        $location = new Point($latitude, $longitude);
-        $parking->setLocation($location);
-
+        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json');
         $parking->setUpdatedAt(new \DateTime());
-
         $errors = $validator->validate($parking);
         if ($errors->count() > 0) {
             return new JsonResponse(['message' => 'Validation error'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $entityManagerInterface->flush();
-
         $cache->invalidateTags(['Parking']);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
@@ -179,11 +139,18 @@ final class ParkingController extends AbstractController
      */
     public function delete(Parking $parking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        $entityManagerInterface->remove($parking);
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($parking->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        // Soft delete
+        $parking->setDataStatus(DataStatus::DELETED);
+        $parking->setUpdatedAt(new \DateTimeImmutable());
         $entityManagerInterface->flush();
-
         $cache->invalidateTags(['Parking']);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

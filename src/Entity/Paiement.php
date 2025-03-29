@@ -16,11 +16,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Paiement
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user_booking", "paiement"])]
+    #[Groups(["user_booking", "paiement", "booking"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'paiements')]
@@ -31,22 +32,23 @@ class Paiement
     #[ORM\ManyToOne(inversedBy: 'paiements')]
     #[ORM\JoinColumn(name: "status_id", nullable: false)]
     #[Gedmo\Versioned]
+    #[Groups(["paiement", "booking"])]
     private ?Status $status = null;
 
-    // #[ORM\Column(length: 16)]
-    // #[Assert\NotBlank]
-    // #[Assert\NotNull]
-    // #[Assert\Length(
-    //     min: 16,
-    //     max: 16,
-    //     exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
-    // )]
-    // #[Assert\Regex(
-    //     pattern: '/^\d+$/',
-    //     message: 'The credit card number must contain only digits'
-    // )]
-    // #[Groups(["user_booking", "paiement"])]
-    // private ?string $creditCardNumber = null;
+    #[ORM\Column(length: 16)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 16,
+        max: 16,
+        exactMessage: 'The credit card number must be exactly {{ limit }} characters long'
+    )]
+    #[Assert\Regex(
+        pattern: '/^\d+$/',
+        message: 'The credit card number must contain only digits'
+    )]
+    #[Groups(["user_booking", "paiement"])]
+    private ?string $creditCardNumber = null;
 
     #[ORM\Column]
     #[Groups(["booking", "user_booking", "paiement"])]
@@ -96,17 +98,17 @@ class Paiement
         return $this;
     }
 
-    // public function getCreditCardNumber(): ?string
-    // {
-    //     return $this->creditCardNumber;
-    // }
+    public function getCreditCardNumber(): ?string
+    {
+        return $this->creditCardNumber;
+    }
 
-    // public function setCreditCardNumber(string $creditCardNumber): static
-    // {
-    //     $this->creditCardNumber = $creditCardNumber;
+    public function setCreditCardNumber(string $creditCardNumber): static
+    {
+        $this->creditCardNumber = $creditCardNumber;
 
-    //     return $this;
-    // }
+        return $this;
+    }
 
     public function getTotalPrice(): ?float
     {

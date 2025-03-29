@@ -2,16 +2,18 @@
 
 namespace App\Controller;
 
+use App\Types\DataStatus;
 use App\Entity\CustomMedia;
 use OpenApi\Attributes as OA;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/media', name: 'api_media_')]
 #[OA\Tag(name: 'Media')]
@@ -55,12 +57,20 @@ final class MediaController extends AbstractController
         return new JsonResponse(["media" => $media, "location" => $location], Response::HTTP_OK);
     }
 
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the media to delete', example: 1)]
 
+    /**
+     * Delete a media
+     * This is a hard and definitive delete because of GDPR rules and because a media is a heavy file
+     */
     #[Route('', name: 'delete', methods: ['DELETE'])]
-    public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface): Response
+    public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
         $entityManagerInterface->remove($media);
         $entityManagerInterface->flush();
+        $cache->invalidateTags(["Media"]);
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
