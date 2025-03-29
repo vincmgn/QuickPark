@@ -41,7 +41,7 @@ final class CreditCardController extends AbstractController
     public function index(CreditCardRepository $creditCardRepository, SerializerInterface $serializerInterface): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        
+
         $creditCard = $creditCardRepository->findAll();
         $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', [
             'groups' => ['user_booking', 'user']
@@ -55,8 +55,15 @@ final class CreditCardController extends AbstractController
     /**
      * Get a specific credit card by ID
      */
-    public function get(CreditCard $creditCard, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $creditCard = $entityManagerInterface->getRepository(CreditCard::class)->find($id);
+
+        if (!$creditCard) {
+            return new JsonResponse(['message' => 'CreditCard not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -111,8 +118,14 @@ final class CreditCardController extends AbstractController
     /**
      * Update a credit card
      */
-    public function update(Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
+    public function update(int $id, Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
+        $creditCard = $entityManagerInterface->getRepository(CreditCard::class)->find($id);
+
+        if (!$creditCard) {
+            return new JsonResponse(['message' => 'CreditCard not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -141,8 +154,14 @@ final class CreditCardController extends AbstractController
      * Delete a credit card
      * This is a hard and definitive delete because of GDPR rules
      */
-    public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $creditCard = $entityManagerInterface->getRepository(CreditCard::class)->find($id);
+
+        if (!$creditCard) {
+            return new JsonResponse(['message' => 'CreditCard not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
