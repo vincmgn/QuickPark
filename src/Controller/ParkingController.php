@@ -9,7 +9,6 @@ use OpenApi\Attributes as OA;
 use App\Repository\ParkingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
-use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -53,15 +52,21 @@ final class ParkingController extends AbstractController
     /**
      * Get a specific parking by ID
      */
-    public function get(Parking $parking, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, Parking $parking, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $parking = $entityManagerInterface->getRepository(Parking::class)->find($id);
+
+        if (!$parking) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status', 'user']]);
         return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
 
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Parking::class))]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "Parking name", "isEnabled" => true, "description" => "Parking description", "owner_id" => 1, "location" => ["latitude" => 0.0, "longitude" => 0.0]]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "Parking name", "isEnabled" => true, "description" => "Parking description", "location" => ["latitude" => 0.0, "longitude" => 0.0]]))]
     /**
      * Add a new parking
      */
@@ -76,10 +81,22 @@ final class ParkingController extends AbstractController
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json');
+        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json', ['ignored_attributes' => ['location']]);
+
+        if (isset($data['location']['latitude'], $data['location']['longitude'])) {
+            $latitude = $data['location']['latitude'];
+            $longitude = $data['location']['longitude'];
+            $point = new Point($latitude, $longitude);
+            $parking->setLocation($point);
+        } else {
+            return new JsonResponse(['message' => 'Invalid location data'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
         $parking->setOwner($currentUser);
+
         $parking->setCreatedAt(new \DateTimeImmutable());
         $parking->setUpdatedAt(new \DateTime());
+
         $errors = $validator->validate($parking);
         if ($errors->count() > 0) {
             return new JsonResponse(['message' => 'Validation error'], JsonResponse::HTTP_BAD_REQUEST);
@@ -87,8 +104,10 @@ final class ParkingController extends AbstractController
 
         $entityManagerInterface->persist($parking);
         $entityManagerInterface->flush();
+
         $cache->invalidateTags(['Parking']);
-        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status']]);
+
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking', 'status', 'user']]);
         $location = $urlGenerator->generate('api_parking_get', ['id' => $parking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         return new JsonResponse($jsonParking, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
@@ -99,8 +118,17 @@ final class ParkingController extends AbstractController
     /**
      * Edit a parking
      */
-    public function edit(Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
+    public function edit(int $id, Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
+
+        $data = json_decode($request->getContent(), true);
+
+        $parking = $entityManagerInterface->getRepository(Parking::class)->find($id);
+
+        if (!$parking) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -108,12 +136,28 @@ final class ParkingController extends AbstractController
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json');
+        $parking = $serializerInterface->deserialize($request->getContent(), Parking::class, 'json', ['ignored_attributes' => ['location']]);
+
+        if (isset($data['location']['latitude'], $data['location']['longitude'])) {
+            $latitude = $data['location']['latitude'];
+            $longitude = $data['location']['longitude'];
+            $point = new Point($latitude, $longitude);
+            $parking->setLocation($point);
+        } else {
+            return new JsonResponse(['message' => 'Invalid location data'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $parking->setOwner($currentUser);
+
+        $parking->setCreatedAt(new \DateTimeImmutable());
         $parking->setUpdatedAt(new \DateTime());
+
         $errors = $validator->validate($parking);
         if ($errors->count() > 0) {
             return new JsonResponse(['message' => 'Validation error'], JsonResponse::HTTP_BAD_REQUEST);
         }
+
+        $entityManagerInterface->persist($parking);
 
         $entityManagerInterface->flush();
         $cache->invalidateTags(['Parking']);
@@ -125,8 +169,14 @@ final class ParkingController extends AbstractController
     /**
      * Delete a parking
      */
-    public function delete(Parking $parking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, Parking $parking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $parking = $entityManagerInterface->getRepository(Parking::class)->find($id);
+
+        if (!$parking) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
