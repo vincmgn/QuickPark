@@ -6,6 +6,7 @@ use App\Types\DataStatus;
 use App\Entity\CustomMedia;
 use OpenApi\Attributes as OA;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/media', name: 'api_media_')]
@@ -30,6 +32,26 @@ final class MediaController extends AbstractController
     // }
 
     #[Route('', name: 'new', methods: ['POST'])]
+    #[OA\Response(response: 201, description: 'Created', content: new Model(type: CustomMedia::class))]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: "multipart/form-data",
+            schema: new OA\Schema(
+                required: ["media"],
+                properties: [
+                    "media" => new OA\Property(
+                        type: "string",
+                        format: "binary",
+                        description: "Media file to upload"
+                    )
+                ]
+            )
+        )
+    )]
+    /**
+     * Create a new media
+     */
     public function createMedia(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator): Response
     {
         $media = new CustomMedia();
@@ -40,6 +62,10 @@ final class MediaController extends AbstractController
         $media->setMedia($files);
         $media->setRealname($files->getClientOriginalName());
         $media->setPublicPath('/public/images/medias');
+
+        $media->setCreatedAt(new \DateTime());
+        $media->setUpdatedAt(new \DateTime());
+
         $entityManagerInterface->persist($media);
         $entityManagerInterface->flush();
 
@@ -49,21 +75,26 @@ final class MediaController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get', methods: ['GET'])]
-    public function getMedia(CustomMedia $media, UrlGeneratorInterface $urlGenerator)
+    #[OA\Response(response: 200, description: 'Success', content: new Model(type: CustomMedia::class))]
+    #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the media to get', example: 1)]
+    /**
+     * Get a specific media by ID
+     */
+    public function getMedia(CustomMedia $media, SerializerInterface $serializer): JsonResponse
     {
-        $location = $urlGenerator->generate("api_media_get", ["id" => $media->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-        $location = $location . str_replace("/public/", "", $media->getPublicPath()) . "/" . $media->getRealPath();
+        $location = str_replace('/api', '', "https://localhost/api") . "/images/medias/" . $media->getRealname();
 
-        return new JsonResponse(["media" => $media, "location" => $location], Response::HTTP_OK);
+        $jsonMedia = $serializer->serialize($media, 'json', [AbstractNormalizer::GROUPS => ['media']]);
+
+        return new JsonResponse(["media" => json_decode($jsonMedia), "location" => $location], Response::HTTP_OK);
     }
+
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the media to delete', example: 1)]
-
     /**
      * Delete a media
-     * This is a hard and definitive delete because of GDPR rules and because a media is a heavy file
      */
     #[Route('', name: 'delete', methods: ['DELETE'])]
     public function deleteMedia(CustomMedia $media, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
