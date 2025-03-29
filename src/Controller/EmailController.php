@@ -59,7 +59,6 @@ final class EmailController extends AbstractController
     public function get(Email $email, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonEmail = $serializerInterface->serialize($email, 'json', ['groups' => ['email', 'user']]);
-
         return new JsonResponse($jsonEmail, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -72,8 +71,9 @@ final class EmailController extends AbstractController
      */
     public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -108,8 +108,9 @@ final class EmailController extends AbstractController
      */
     public function update(Email $email, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -119,9 +120,12 @@ final class EmailController extends AbstractController
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
+        if ($email->getOwner() !== $currentUser && $this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        
         $email = $serializerInterface->deserialize($request->getContent(), Email::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $email]);
         $email->setUpdatedAt(new \DateTime());
-        $email->setOwner($currentUser);
         $errors = $validator->validate($email);
 
         if (count($errors) > 0) {
@@ -141,13 +145,10 @@ final class EmailController extends AbstractController
      */
     public function delete(Email $email, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User || ($email->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 

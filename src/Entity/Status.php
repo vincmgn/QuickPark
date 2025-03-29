@@ -18,7 +18,7 @@ class Status
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["booking", "parking", "status"])]
+    #[Groups(["status"])]
     private ?string $name = null;
 
     /**

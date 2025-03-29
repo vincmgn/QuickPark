@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Status;
 use App\Entity\Paiement;
+use App\Types\DataStatus;
 use OpenApi\Attributes as OA;
 use App\Repository\PaiementRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,7 +47,7 @@ final class PaiementController extends AbstractController
     public function get(Paiement $paiement, SerializerInterface $serializerInterface): JsonResponse
     {
         $jsonPaiement = $serializerInterface->serialize($paiement, 'json', [
-            'groups' => ['paiement']
+            'groups' => ['paiement', 'status', 'credit_card']
         ]);
 
         return new JsonResponse($jsonPaiement, JsonResponse::HTTP_OK, [], true);
@@ -79,7 +80,7 @@ final class PaiementController extends AbstractController
 
         $cache->invalidateTags(['paiement']);
 
-        $jsonPaiement = $serializerInterface->serialize($paiement, 'json', ['groups' => ['paiement']]);
+        $jsonPaiement = $serializerInterface->serialize($paiement, 'json', ['groups' => ['paiement', 'status', 'credit_card']]);
         $location = $urlGenerator->generate('api_paiement_get', ['id' => $paiement->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonPaiement, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
@@ -98,13 +99,14 @@ final class PaiementController extends AbstractController
         $paiement->setStatus($data['status']);
         $paiement->setCreditCard($data['creditCard']);
         $paiement->setTotalPrice($data['totalPrice']);
+        $paiement->setCreditCardNumber($data['creditCardNumber']);
 
         $errors = $validator->validate($paiement);
-
         if (count($errors) > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
 
+        $paiement->setUpdatedAt(new \DateTime());
         $entityManagerInterface->flush();
         $cache->invalidateTags(['paiement']);
 
@@ -118,18 +120,11 @@ final class PaiementController extends AbstractController
      */
     public function delete(Paiement $paiement, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        foreach ($paiement->getBooking() as $booking) {
-            $booking->setPaiement(null);
-            $entityManagerInterface->persist($booking);
-        }
-
+        // Soft delete
+        $paiement->setDataStatus(DataStatus::DELETED);
+        $paiement->setUpdatedAt(new \DateTimeImmutable());
         $entityManagerInterface->flush();
-
-        $entityManagerInterface->remove($paiement);
-        $entityManagerInterface->flush();
-
         $cache->invalidateTags(['paiement']);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

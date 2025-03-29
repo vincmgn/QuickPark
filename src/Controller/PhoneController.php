@@ -56,6 +56,13 @@ final class PhoneController extends AbstractController
      */
     public function get(Phone $phone, SerializerInterface $serializerInterface): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($phone->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $jsonPhone = $serializerInterface->serialize($phone, 'json', ['groups' => ['phone']]);
 
         return new JsonResponse($jsonPhone, JsonResponse::HTTP_OK, [], true);
@@ -70,8 +77,9 @@ final class PhoneController extends AbstractController
      */
     public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
         if (null === $token) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -106,20 +114,15 @@ final class PhoneController extends AbstractController
      */
     public function update(Phone $phone, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User || ($phone->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $phone = $serializerInterface->deserialize($request->getContent(), Phone::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $phone]);
         $phone->setUpdatedAt(new \DateTime());
-        $phone->setOwner($currentUser);
         $errors = $validator->validate($phone);
 
         if (count($errors) > 0) {
@@ -141,13 +144,10 @@ final class PhoneController extends AbstractController
      */
     public function delete(Phone $phone, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User || ($phone->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 

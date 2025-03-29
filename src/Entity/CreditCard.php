@@ -21,7 +21,7 @@ class CreditCard
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["user_booking", "user"])]
+    #[Groups(["user_booking", "user", "credit_card"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 16)]
@@ -36,22 +36,23 @@ class CreditCard
         pattern: '/^\d+$/',
         message: 'The credit card number must contain only digits'
     )]
-    #[Groups(["user_booking", "user"])]
+    #[Groups(["user_booking", "user", "credit_card"])]
     private ?string $number = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
     // #[Assert\DateTime(format: 'Y-m-d H:i:s')]
-    #[Groups(["user_booking", "user"])]
+    #[Groups(["user_booking", "user", "credit_card"])]
     private ?\DateTimeInterface $expirationDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'creditCards')]
     #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
-    #[Groups(["credit_card_detail"])]
+    #[Groups(["credit_card"])]
     private ?User $owner = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["credit_card"])]
     private ?string $ownerName = null;
     public static function validateExpirationDate(CreditCard $creditCard, ExecutionContextInterface $context): void
     {

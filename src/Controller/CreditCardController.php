@@ -40,6 +40,8 @@ final class CreditCardController extends AbstractController
      */
     public function index(CreditCardRepository $creditCardRepository, SerializerInterface $serializerInterface): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
         $creditCard = $creditCardRepository->findAll();
         $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', [
             'groups' => ['user_booking', 'user']
@@ -55,6 +57,13 @@ final class CreditCardController extends AbstractController
      */
     public function get(CreditCard $creditCard, SerializerInterface $serializerInterface): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($creditCard->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $jsonCreditCard = $serializerInterface->serialize($creditCard, 'json', [
             'groups' => ['user_booking', 'user']
         ]);
@@ -70,22 +79,17 @@ final class CreditCardController extends AbstractController
      */
     public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
-        $currentUser = $token->getUser();
 
         $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json');
         $creditCard->setOwner($currentUser);
-        $creditCard->setOwnerName($data['owner_name']);
-
         $creditCard->setCreatedAt(new \DateTimeImmutable());
         $creditCard->setUpdatedAt(new \DateTime());
-
         $errors = $validator->validate($creditCard);
         if ($errors->count() > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json',), JsonResponse::HTTP_BAD_REQUEST, [], true);
@@ -109,19 +113,14 @@ final class CreditCardController extends AbstractController
      */
     public function update(Request $request, CreditCard $creditCard, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        /** @var ?User $currentUser */
         $token = $this->tokenStorage->getToken();
-        if (null === $token) {
-            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
-        }
+        /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-
-        if (!$currentUser instanceof User) {
+        if (null === $token || !$currentUser instanceof User || ($creditCard->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $creditCard = $serializerInterface->deserialize($request->getContent(), CreditCard::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $creditCard]);
-        $creditCard->setOwner($currentUser);
         $creditCard->setUpdatedAt(new \DateTime());
 
         $errors = $validator->validate($creditCard);
@@ -144,6 +143,22 @@ final class CreditCardController extends AbstractController
      */
     public function delete(CreditCard $creditCard, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $currentUser = $token->getUser();
+        if (!$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        if ($creditCard->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $entityManagerInterface->remove($creditCard);
         $entityManagerInterface->flush();
         $cache->invalidateTags(['CreditCard']);

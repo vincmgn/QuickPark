@@ -43,7 +43,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $maleGender = reset($filteredGenders);
 
         $adminUser = new User();
-        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
         $adminUser->setUsername('alexnbl27');
         $adminUser->setGender($maleGender);
@@ -53,7 +53,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $this->addReference('alexnbl27', $adminUser);
 
         $adminUser = new User();
-        $adminUser->setRoles(['ROLE_ADMIN']);
+        $adminUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $adminUser->setPassword($this->userPasswordHasher->hashPassword($adminUser, 'admin'));
         $adminUser->setUsername('vinvin');
         $adminUser->setGender($maleGender);
@@ -63,7 +63,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
         $this->addReference('vinvin', $adminUser);
 
         $normalUser = new User();
-        $normalUser->setRoles(['ROLE_USER']);
+        $normalUser->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
         $normalUser->setPassword($this->userPasswordHasher->hashPassword($normalUser, 'password'));
         $normalUser->setUsername('user');
         $normalUser->setGender($maleGender);

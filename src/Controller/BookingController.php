@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\Booking;
-use OpenApi\Attributes as OA;
 use App\Types\DataStatus;
+use OpenApi\Attributes as OA;
 use App\Repository\BookingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -17,6 +18,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/booking', name: 'api_booking_')]
 #[OA\Tag(name: 'Booking')]
@@ -24,6 +26,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[OA\Response(response: 401, description: 'Unauthorized')]
 final class BookingController extends AbstractController
 {
+    private TokenStorageInterface $tokenStorage;
+
+    private const UNAUTHORIZED_ACTION = "You are not allowed to do this action.";
+
+    public function __construct(TokenStorageInterface $tokenStorage)
+    {
+        $this->tokenStorage = $tokenStorage;
+    }
+
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
     /**
@@ -31,9 +42,10 @@ final class BookingController extends AbstractController
      */
     public function index(BookingRepository $bookingRepository, SerializerInterface $serializerInterface): JsonResponse
     {
-        $booking = $bookingRepository->findAll();
-        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats"]]);
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        $booking = $bookingRepository->findAll();
+        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats", "status", "user"]]);
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -44,8 +56,14 @@ final class BookingController extends AbstractController
      */
     public function get(Booking $booking, SerializerInterface $serializerInterface): JsonResponse
     {
-        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats"]]);
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($booking->getClient() !== $currentUser && $booking->getParking()->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
 
+        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats", "status", "user"]]);
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -55,9 +73,19 @@ final class BookingController extends AbstractController
     /**
      * Add a booking
      */
-    public function add(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $booking = $serializerInterface->deserialize($request->getContent(), Booking::class, 'json');
+        $booking->setClient($currentUser);
+        $booking->setCreatedAt(new \DateTimeImmutable());
+        $booking->setUpdatedAt(new \DateTime());
         $errors = $validator->validate($booking);
         if ($errors->count() > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
@@ -68,23 +96,34 @@ final class BookingController extends AbstractController
 
         $jsonBooking = $serializerInterface->serialize($booking, 'json');
         $location = $urlGenerator->generate("booking_get", ['id' => $booking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
      * Update an existing booking by ID
      *
      */
-    public function update(Booking $booking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function edit(Booking $booking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || !$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $booking = $serializerInterface->deserialize($request->getContent(), Booking::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $booking]);
+        $booking->setUpdatedAt(new \DateTime());
+        $errors = $validator->validate($booking);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Booking"]);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
@@ -95,6 +134,13 @@ final class BookingController extends AbstractController
      */
     public function delete(Booking $booking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $token = $this->tokenStorage->getToken();
+        /** @var ?User $currentUser */
+        $currentUser = $token->getUser();
+        if (null === $token || !$currentUser instanceof User || ($booking->getClient() !== $currentUser && $booking->getParking()->getOwner() !== $currentUser && !$this->isGranted('ROLE_ADMIN'))) {
+            return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         // Soft delete
         $booking->setDataStatus(DataStatus::DELETED);
         $booking->setUpdatedAt(new \DateTime());

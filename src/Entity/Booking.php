@@ -64,6 +64,7 @@ class Booking
     #[Gedmo\Versioned]
     private ?Paiement $paiement = null;
 
+    #[Groups(["booking"])]
     #[ORM\ManyToOne(inversedBy: 'bookings')]
     #[ORM\JoinColumn(name: "client_id", referencedColumnName: "id", nullable: false)]
     private ?User $client = null;
