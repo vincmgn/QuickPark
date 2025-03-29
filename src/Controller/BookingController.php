@@ -24,6 +24,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 #[OA\Tag(name: 'Booking')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
+#[OA\Response(response: 403, description: 'Forbidden')]
 final class BookingController extends AbstractController
 {
     private TokenStorageInterface $tokenStorage;
@@ -37,6 +38,7 @@ final class BookingController extends AbstractController
 
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Booking::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all bookings
      */

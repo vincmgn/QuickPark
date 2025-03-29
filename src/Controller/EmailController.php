@@ -26,6 +26,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 #[OA\Tag(name: 'Email')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
+#[OA\Response(response: 403, description: 'Forbidden')]
 final class EmailController extends AbstractController
 {
     private TokenStorageInterface $tokenStorage;
@@ -39,6 +40,7 @@ final class EmailController extends AbstractController
 
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Email::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all emails
      */
@@ -76,7 +78,6 @@ final class EmailController extends AbstractController
 
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Email::class))]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["email" => "test@test.com"]))]
     /**
      * Create a new email
@@ -112,7 +113,6 @@ final class EmailController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["email" => "test@test.com"]))]
     /**
      * Edit a email by ID
@@ -146,7 +146,6 @@ final class EmailController extends AbstractController
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     /**
      * Delete a email by ID
      */

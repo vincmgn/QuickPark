@@ -26,6 +26,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 #[OA\Tag(name: 'Phone')]
 #[OA\Response(response: 400, description: 'Bad request')]
 #[OA\Response(response: 401, description: 'Unauthorized')]
+#[OA\Response(response: 403, description: 'Forbidden')]
 final class PhoneController extends AbstractController
 {
     private TokenStorageInterface $tokenStorage;
@@ -39,6 +40,7 @@ final class PhoneController extends AbstractController
 
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Phone::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all phones
      */
@@ -76,7 +78,6 @@ final class PhoneController extends AbstractController
 
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Phone::class))]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "+33612345678"]))]
     /**
      * Create a new phone
@@ -113,7 +114,6 @@ final class PhoneController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "+33612345678"]))]
     /**
      * Edit a phone by ID
@@ -147,7 +147,6 @@ final class PhoneController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
     #[OA\Parameter(name: 'id', in: 'path', required: true, description: 'ID of the phone to delete', example: 1)]
-    #[OA\Response(response: 403, description: 'Forbidden')]
     /**
      * Delete a phone by ID
      * This is a hard and definitive delete because of GDPR rules

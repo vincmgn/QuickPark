@@ -26,11 +26,14 @@ final class PaiementController extends AbstractController
 {
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Paiement::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all paiements
      */
     public function index(PaiementRepository $paiementRepository, SerializerInterface $serializerInterface): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $paiement = $paiementRepository->findAll();
         $jsonPaiement = $serializerInterface->serialize($paiement, 'json', [
             'groups' => ['paiement']

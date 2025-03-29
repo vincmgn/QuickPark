@@ -35,6 +35,7 @@ final class CreditCardController extends AbstractController
 
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: CreditCard::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all credit cards
      */

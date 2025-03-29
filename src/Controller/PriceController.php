@@ -35,11 +35,14 @@ final class PriceController extends AbstractController
 
     #[Route('', name: 'getAll', methods: ['GET'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Price::class))]
+    #[OA\Tag(name: 'Admin', description: 'These endpoints are only accessible to admin users')]
     /**
      * Get all prices
      */
     public function index(PriceRepository $priceRepository, SerializerInterface $serializerInterface): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
         $price = $priceRepository->findAll();
         $jsonPrice = $serializerInterface->serialize($price, 'json', ['groups' => ['booking', 'parking',  'user_booking']]);
 
