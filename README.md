@@ -63,16 +63,17 @@ php bin/console doctrine:fixtures:load
 ```
 
 6. And that's it! Our **API** is ready to be tested. To do this, simply go to [https://localhost/api/doc](https://localhost/api/doc) in your favorite browser. <br><br>
-    _💡 If your browser informs you that the connection is not secure, click "Continue anyway". You are safe because you are on **localhost**, which means the service is running on your own machine. We just haven't set up a self-signed certificate system, which is why the error appears._ <br><br>
-    You can now enjoy the documentation and integrated examples directly in **Swagger** to test the features of our **API**.
+   _💡 If your browser informs you that the connection is not secure, click "Continue anyway". You are safe because you are on **localhost**, which means the service is running on your own machine. We just haven't set up a self-signed certificate system, which is why the error appears._ <br><br>
+   You can now enjoy the documentation and integrated examples directly in **Swagger** to test the features of our **API**.
 
 7. Before using our routes, you need to start with the **login** route where you will log in with the following credentials:
 
-- Admin:
+-   Admin:
+
     -   **username**: 'adminDemo'
     -   **password**: 'password'
 
-- User:
+-   User:
     -   **username**: 'userDemo'
     -   **password**: 'password'
 
@@ -80,11 +81,18 @@ Then you need to copy the text from the `token` field:
 
 ```json
 {
-     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3NDI5Mzk5MzYsImV4cCI6MTc0Mjk0MzUzNiwicm9sZXMiOlsiUk9MRV9BRE1JTiIsIlJPTEVfVVNFUiJdLCJ1c2VybmFtZSI6InZpbnZpbiJ9.CKb3UbcRBJUE_KKGpNEC7x8GBTyq7xncYZCMbcwWsC3Ipt2bWNX8pPROlXosE5axVwoP-F5-6xo86BzZdGCBJ_p9B6udnDXVSYgZzWPZoJKmR5o708ZseeNwHQBUSvtNPX4GIHGGHSaJ4cxQUeBr66u3RFbZBUSsb-TGunMtCOTbHlibrrMt3xhjH2a9-c2gYq6R-3jnie2eTi8Q-43iWcOhqDZ-52f7JibFN7HzmygzTVKEzuWALh-IhvZoHMm6Qx85blz8piF3ROT3vx_R3b1tOdDSkx1dpWLRgyXCkT_zrq1_gkMaBoju_ct8m2TN2QCLMxZd1oGg2Dg1BiXzCQ",
-     "refresh_token": "0f413b5750f690f5f6c66d3f2096cb41716f0c6330bb9a48c7b019ca30fb2df984f805b1d9edd06155bc412f28ea5cb4d3ef5891de023e8c1944846411709602"
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3NDI5Mzk5MzYsImV4cCI6MTc0Mjk0MzUzNiwicm9sZXMiOlsiUk9MRV9BRE1JTiIsIlJPTEVfVVNFUiJdLCJ1c2VybmFtZSI6InZpbnZpbiJ9.CKb3UbcRBJUE_KKGpNEC7x8GBTyq7xncYZCMbcwWsC3Ipt2bWNX8pPROlXosE5axVwoP-F5-6xo86BzZdGCBJ_p9B6udnDXVSYgZzWPZoJKmR5o708ZseeNwHQBUSvtNPX4GIHGGHSaJ4cxQUeBr66u3RFbZBUSsb-TGunMtCOTbHlibrrMt3xhjH2a9-c2gYq6R-3jnie2eTi8Q-43iWcOhqDZ-52f7JibFN7HzmygzTVKEzuWALh-IhvZoHMm6Qx85blz8piF3ROT3vx_R3b1tOdDSkx1dpWLRgyXCkT_zrq1_gkMaBoju_ct8m2TN2QCLMxZd1oGg2Dg1BiXzCQ",
+    "refresh_token": "0f413b5750f690f5f6c66d3f2096cb41716f0c6330bb9a48c7b019ca30fb2df984f805b1d9edd06155bc412f28ea5cb4d3ef5891de023e8c1944846411709602"
 }
 ```
+
 In this example, it is the text `ey...zCQ` that you need to copy and paste into the **Authorize** field at the top of the **Swagger** web page. Once this token is entered, you can start using the other routes 🥳
+
+### Medias
+
+To test routes that require sending files, you can use the **Postman** tool. Simply create a new **POST** request, add an **Authorization** of type **Bearer Token**, and paste the token. Then, in the **Body** tab, you can select the **form-data** request type and add a field named `media` with the type `File`. You can then choose a file from your machine to send.
+
+When performing a "GET" request on the route `/api/media/{id}`, you have the option to access the previously uploaded image. Simply copy the URL into your browser to view the image.
 
 ### For Advanced Users (Experienced Developers 😉)
 
