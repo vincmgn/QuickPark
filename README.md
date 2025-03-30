@@ -43,30 +43,29 @@ composer install
 
 _💡 Make sure you are inside your container by typing this command. You should see something like `root@xxxxxxxxxxxx:/app#` at the beginning of your terminal. If not, go back to step 3._
 
-<!--
-2. Generate JWT keys
+5. Generate JWT keys
 
 ```bash
 php bin/console lexik:jwt:generate-keypair
-``` -->
+```
 
-4. We need to ensure that our database uses the correct structure, also known as the **schema**:
+6. We need to ensure that our database uses the correct structure, also known as the **schema**:
 
 ```bash
 php bin/console doctrine:schema:update --force
 ```
 
-5. Next, to test our **API** with a complete dataset, we need to populate our database:
+7. Next, to test our **API** with a complete dataset, we need to populate our database:
 
 ```bash
 php bin/console doctrine:fixtures:load
 ```
 
-6. And that's it! Our **API** is ready to be tested. To do this, simply go to [https://localhost/api/doc](https://localhost/api/doc) in your favorite browser. <br><br>
+8. And that's it! Our **API** is ready to be tested. To do this, simply go to [https://localhost/api/doc](https://localhost/api/doc) in your favorite browser. <br><br>
    _💡 If your browser informs you that the connection is not secure, click "Continue anyway". You are safe because you are on **localhost**, which means the service is running on your own machine. We just haven't set up a self-signed certificate system, which is why the error appears._ <br><br>
    You can now enjoy the documentation and integrated examples directly in **Swagger** to test the features of our **API**.
 
-7. Before using our routes, you need to start with the **login** route where you will log in with the following credentials:
+9. Before using our routes, you need to start with the **login** route where you will log in with the following credentials:
 
 -   Admin:
 
@@ -115,7 +114,7 @@ php vendor/bin/phpunit tests
 To access the database, you must first obtain the port the container is running on:
 
 ```bash
-docker port quickpark-database-1  
+docker port quickpark-database-1
 ```
 
 You should see output similar to this:
@@ -128,10 +127,10 @@ In this example, your database container is running on port **65193**. To view t
 
 Once installed, open the software and use the following configuration:
 
-- **Host**: localhost  
-- **Port**: 65193  
-- **User**: app  
-- **Password**: !ChangeMe!  
+-   **Host**: localhost
+-   **Port**: 65193
+-   **User**: app
+-   **Password**: !ChangeMe!
 
 That's it! You now have access to the API database. Enjoy! 🥳
 

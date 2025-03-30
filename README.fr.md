@@ -43,30 +43,29 @@ composer install
 
 _💡 Pensez à vérifier que vous êtes bien à l'intérieur de votre container en tapant cette commande. Vous devriez voir apparaître au début de votre terminal quelque chose comme `root@xxxxxxxxxxxx:/app#`. Si ce n'est pas le cas, retour à l'étape 3._
 
-<!--
-2. Generate JWT keys
+5. Generate JWT keys
 
 ```bash
 php bin/console lexik:jwt:generate-keypair
-``` -->
+```
 
-4. Il nous faut vérifier que notre base de données va utiliser la bonne structure, aussi appelée **schéma**.
+6. Il nous faut vérifier que notre base de données va utiliser la bonne structure, aussi appelée **schéma**.
 
 ```bash
 php bin/console doctrine:schema:update --force
 ```
 
-5. Ensuite, pour tester notre **API** avec un jeu de données complet, il nous faut peupler notre base de données.
+7. Ensuite, pour tester notre **API** avec un jeu de données complet, il nous faut peupler notre base de données.
 
 ```bash
 php bin/console doctrine:fixtures:load
 ```
 
-6. Et voilà ! Notre **API** est prête à être testée. Pour cela, rien de plus simple, rendez-vous à l'adresse [https://localhost/api/doc](https://localhost/api/doc) sur votre navigateur préféré. <br><br>
+8. Et voilà ! Notre **API** est prête à être testée. Pour cela, rien de plus simple, rendez-vous à l'adresse [https://localhost/api/doc](https://localhost/api/doc) sur votre navigateur préféré. <br><br>
    _💡Si votre navigateur vous informe que la connexion n'est pas sécurisée, faites "Continuer quand même". Vous ne craignez rien car vous êtes en **localhost** ce qui signifie que le service tourne sur votre propre machine. Nous n'avons juste pas mis en place de système de certificats auto-signés, c'est pour ça que l'erreur apparaît._ <br><br>
    Vous pouvez désormais profiter des documentations et des exemples intégrés directement au **Swagger** pour tester les fonctionnalités de notre **API**.
 
-7. Avant d'utiliser nos routes, il faut commencer par la route **login** où vous devrez vous connecter avec les identifiants suivants :
+9. Avant d'utiliser nos routes, il faut commencer par la route **login** où vous devrez vous connecter avec les identifiants suivants :
 
 -   Admin:
 
@@ -95,6 +94,7 @@ Pour tester les routes qui nécessitent d'envoyer des fichiers, vous pouvez util
 Lors d'un "GET" sur la route `/api/media/{id}`, vous avez la possibilité d'accéder à l'image envoyée précédemment. Il vous suffit de copier l'URL dans votre navigateur pour voir l'image.
 
 ### Pour aller plus loin (côté des développeurs expérimentés 😉)
+
 #### 🧪 Tests
 
 Vous pouvez également vérifier l'intégrité et le bon fonctionnement de nos routes en exécutant la procédure de tests unitaires que nous avons conçue pour notre **API**. Pour ce faire, rendez-vous dans le container :
@@ -114,7 +114,7 @@ php vendor/bin/phpunit tests
 Pour accéder à la base de données, vous devez d'abord obtenir le port sur lequel le container fonctionne :
 
 ```bash
-docker port quickpark-database-1  
+docker port quickpark-database-1
 ```
 
 Vous devriez voir une sortie similaire à celle-ci :
@@ -127,10 +127,10 @@ Dans cet exemple, votre container de base de données fonctionne sur le port **6
 
 Une fois installé, ouvrez le logiciel et utilisez la configuration suivante :
 
-- **Hôte** : localhost  
-- **Port** : 65193  
-- **Utilisateur** : app  
-- **Mot de passe** : !ChangeMe!  
+-   **Hôte** : localhost
+-   **Port** : 65193
+-   **Utilisateur** : app
+-   **Mot de passe** : !ChangeMe!
 
 Et voilà ! Vous avez maintenant accès à la base de données de l'API. Profitez-en ! 🥳
 
