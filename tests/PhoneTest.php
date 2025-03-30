@@ -5,7 +5,10 @@ namespace App\Tests\Entity;
 use App\Entity\Phone;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(Phone::class)]
 class PhoneTest extends TestCase
 {
     private function getEntity(): Phone

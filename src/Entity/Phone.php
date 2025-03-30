@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\PhoneRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PhoneRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PhoneRepository::class)]
@@ -14,11 +15,13 @@ class Phone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["user", "phone"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\NotNull]
+    #[Groups(["user", "phone"])]
     #[Assert\Length(
         min: 10,
         max: 25,
@@ -29,14 +32,19 @@ class Phone
         pattern: '/^\+?[0-9\s\-]{10,25}$/',
         message: 'The phone number is not valid'
     )]
-    private ?string $number = null;    
+    private ?string $number = null;
 
     #[ORM\ManyToOne(inversedBy: 'phones')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Status $status = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(["user", "phone"])]
     private ?\DateTimeImmutable $verifiedAt = null;
+
+    #[ORM\OneToOne(inversedBy: 'phone', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: "owner_id", referencedColumnName: "id", nullable: false)]
+    private ?User $owner = null;
 
     public function getId(): ?int
     {
@@ -75,6 +83,18 @@ class Phone
     public function setVerifiedAt(?\DateTimeImmutable $verifiedAt): static
     {
         $this->verifiedAt = $verifiedAt;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }

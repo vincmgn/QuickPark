@@ -5,7 +5,10 @@ namespace App\Tests\Entity;
 use App\Entity\Email;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(Email::class)]
 class EmailTest extends TestCase
 {
     private function getEntity(): Email

@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Entity\Traits;
+namespace App\Types;
 
 enum DataStatus: string
 {
     case ACTIVE = 'active';
-    case INACTIVE = 'inactive';
-    case PENDING = 'pending';
     case DELETED = 'deleted';
     case ARCHIVED = 'archived';
+    case CANCELLED = 'cancelled';
     case DRAFT = 'draft';
-    case MOCK = 'mock';
 }

@@ -5,7 +5,11 @@ use App\Entity\Parking;
 use LongitudeOne\Spatial\PHP\Types\Geography\Point;
 use Symfony\Component\Validator\Validation;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\Attributes\CoversClass;
 
+#[CoversClass(Parking::class)]
+#[UsesClass(Point::class)]
 class ParkingTest extends TestCase
 {
     private function getEntity() : Parking

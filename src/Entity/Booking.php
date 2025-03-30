@@ -8,37 +8,42 @@ use App\Repository\BookingRepository;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[Assert\Callback([self::class, 'validateDates'])]
+#[Gedmo\Loggable]
 class Booking
 {
     use Traits\StatisticsPropertiesTrait;
+    use Traits\DataStatusTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\ManyToOne(inversedBy: 'bookings', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking" ])]
+    #[Groups(["booking", "user_booking"])]
     private ?Parking $parking = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking"])]
+    #[Groups(["booking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?Price $price = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(["booking", "parking"])]
+    #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?\DateTimeInterface $endDate = null;
-
     public static function validateDates(Booking $booking, ExecutionContextInterface $context): void
     {
         if ($booking->getStartDate() >= $booking->getEndDate()) {
@@ -48,15 +53,21 @@ class Booking
         }
     }
 
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\ManyToOne(inversedBy: 'bookings', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking"])]
+    #[Gedmo\Versioned]
     private ?Status $status = null;
 
-    #[ORM\ManyToOne(inversedBy: 'booking')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["booking", "parking"])]
+    #[ORM\ManyToOne(inversedBy: 'booking', cascade: ['persist'])]
+    #[Groups(["booking", "parking", "user_booking"])]
+    #[Gedmo\Versioned]
     private ?Paiement $paiement = null;
+
+    #[Groups(["booking"])]
+    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\JoinColumn(name: "client_id", referencedColumnName: "id", nullable: false)]
+    private ?User $client = null;
 
     public function getId(): ?int
     {
@@ -131,6 +142,18 @@ class Booking
     public function setPaiement(?Paiement $paiement): static
     {
         $this->paiement = $paiement;
+
+        return $this;
+    }
+
+    public function getClient(): ?User
+    {
+        return $this->client;
+    }
+
+    public function setClient(?User $client): static
+    {
+        $this->client = $client;
 
         return $this;
     }
