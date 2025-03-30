@@ -87,18 +87,82 @@ Il faut ensuite copier le texte du champ `token` :
 Dans cet exemple c'est le texte `ey...zCQ` qu'il faut copier puis aller coller dans le champ **Authorize** tout en haut de la page web du **Swagger**. Une fois ce token entré, vous pouvez commencer à utiliser les autres routes 🥳
 
 ### Pour aller plus loin (côté des développeurs expérimentés 😉)
+#### 🧪 Tests
 
-Vous pouvez également vérifier l'intégrité et le bon fonctionnement de nos routes en lançant la procédure de test unitaire que nous avons conçue pour notre **API**. Pour cela, il vous suffit de vous rendre dans le container :
+Vous pouvez également vérifier l'intégrité et le bon fonctionnement de nos routes en exécutant la procédure de tests unitaires que nous avons conçue pour notre **API**. Pour ce faire, rendez-vous dans le container :
 
 ```bash
 docker exec -it quickpark-php-1 bash
 ```
 
-Puis de lancer la commande suivante :
+Puis exécutez la commande suivante :
 
 ```bash
 php vendor/bin/phpunit tests
 ```
+
+#### 💾 Base de données
+
+Pour accéder à la base de données, vous devez d'abord obtenir le port sur lequel le container fonctionne :
+
+```bash
+docker port quickpark-database-1  
+```
+
+Vous devriez voir une sortie similaire à celle-ci :
+
+```bash
+5432/tcp -> 0.0.0.0:65193
+```
+
+Dans cet exemple, votre container de base de données fonctionne sur le port **65193**. Pour visualiser la base de données, vous aurez besoin d'un logiciel de gestion de base de données. Nous recommandons **Beekeeper Studio** car il est intuitif et open source. Vous pouvez le télécharger [ici](https://www.beekeeperstudio.io).
+
+Une fois installé, ouvrez le logiciel et utilisez la configuration suivante :
+
+- **Hôte** : localhost  
+- **Port** : 65193  
+- **Utilisateur** : app  
+- **Mot de passe** : !ChangeMe!  
+
+Et voilà ! Vous avez maintenant accès à la base de données de l'API. Profitez-en ! 🥳
+#### 🧪 Tests
+
+You can also verify the integrity and proper functioning of our routes by running the unit test procedure we have designed for our **API**. To do this, simply go to the container:
+
+```bash
+docker exec -it quickpark-php-1 bash
+```
+
+Then run the following command:
+
+```bash
+php vendor/bin/phpunit tests
+```
+
+#### 💾 Database
+
+To access the database, you must first obtain the port the container is running on:
+
+```bash
+docker port quickpark-database-1  
+```
+
+You should see output similar to this:
+
+```bash
+5432/tcp -> 0.0.0.0:65193
+```
+
+In this example, your database container is running on port **65193**. To view the database, you will need database management software. We recommend **Beekeeper Studio** because it is intuitive and open source. You can download it [here](https://www.beekeeperstudio.io).
+
+Once installed, open the software and use the following configuration:
+
+- **Host**: localhost  
+- **Port**: 65193  
+- **User**: app  
+- **Password**: !ChangeMe!  
+
+That's it! You now have access to the API database. Enjoy! 🥳
 
 ## License
 
