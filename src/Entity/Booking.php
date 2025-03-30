@@ -24,12 +24,12 @@ class Booking
     #[Groups(["booking", "parking", "user_booking"])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\ManyToOne(inversedBy: 'bookings', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking", "user_booking"])]
     private ?Parking $parking = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking", "user_booking"])]
     #[Gedmo\Versioned]
@@ -53,7 +53,7 @@ class Booking
         }
     }
 
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
+    #[ORM\ManyToOne(inversedBy: 'bookings', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["booking"])]
     #[Gedmo\Versioned]

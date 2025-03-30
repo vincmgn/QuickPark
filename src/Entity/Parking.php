@@ -27,7 +27,7 @@ class Parking
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["booking", "parking", "user_booking"])]
+    #[Groups(["booking", "parking", "user_booking", "parking_prices"])]
     private ?int $id = null;
 
     #[ORM\Column]

@@ -64,6 +64,23 @@ final class ParkingController extends AbstractController
         return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
     }
 
+    #[Route('/{id}/prices', name: 'getPrices', methods: ['GET'])]
+    #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    /**
+     * Get all prices for a specific parking by ID
+     */
+    public function getPrices(int $id, Parking $parking, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
+    {
+        $parking = $entityManagerInterface->getRepository(Parking::class)->find($id);
+
+        if (!$parking) {
+            return new JsonResponse(['message' => 'Email not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $jsonParking = $serializerInterface->serialize($parking, 'json', ['groups' => ['parking_prices', 'status']]);
+        return new JsonResponse($jsonParking, JsonResponse::HTTP_OK, [], true);
+    }
+
     #[Route('', name: 'new', methods: ['POST'])]
     #[OA\Response(response: 201, description: 'Created', content: new Model(type: Parking::class))]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "Parking name", "isEnabled" => true, "description" => "Parking description", "location" => ["latitude" => 0.0, "longitude" => 0.0]]))]

@@ -4,9 +4,13 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Booking;
+use App\Entity\Paiement;
 use App\Types\DataStatus;
 use OpenApi\Attributes as OA;
+use App\Repository\PriceRepository;
+use App\Repository\StatusRepository;
 use App\Repository\BookingRepository;
+use App\Repository\ParkingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use Symfony\Component\HttpFoundation\Request;
@@ -69,41 +73,127 @@ final class BookingController extends AbstractController
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_OK, [], true);
     }
 
-    #[Route('', name: 'new', methods: ['POST'])]
-    #[OA\Response(response: 201, description: 'Created', content: new Model(type: Booking::class))]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
+    #[Route('/api/bookings', name: 'booking_new', methods: ['POST'])]
+    #[OA\Response(
+        response: 201,
+        description: 'Booking created successfully',
+        content: new Model(type: Booking::class, groups: ["booking"])
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            type: 'object',
+            example: [
+                'parking' => 1201,
+                'price' => 1101,
+                'startDate' => '2025-04-15T10:00:00+00:00',
+                'endDate' => '2025-04-15T12:00:00+00:00',
+                'paiement' => [
+                    'totalPrice' => 20.5,
+                    'creditCardNumber' => '4485237470142195',
+                    'ownerName' => 'John Doe'
+                ]
+            ]
+        )
+    )]
     /**
-     * Add a booking
+     * Add a new booking.
      */
-    public function new(Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, UrlGeneratorInterface $urlGenerator, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
-    {
-        $token = $this->tokenStorage->getToken();
+    public function new(
+        Request $request,
+        SerializerInterface $serializerInterface,
+        EntityManagerInterface $entityManagerInterface,
+        ParkingRepository $parkingRepository,
+        PriceRepository $priceRepository,
+        StatusRepository $statusRepository,
+        UrlGeneratorInterface $urlGenerator,
+        TagAwareCacheInterface $cache,
+        ValidatorInterface $validator,
+        TokenStorageInterface $tokenStorage
+    ): JsonResponse {
+        $token = $tokenStorage->getToken();
         /** @var ?User $currentUser */
-        $currentUser = $token->getUser();
+        $currentUser = $token?->getUser();
         if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $booking = $serializerInterface->deserialize($request->getContent(), Booking::class, 'json');
+        try {
+            $booking = $serializerInterface->deserialize($request->getContent(), Booking::class, 'json');
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => 'Invalid JSON format: ' . $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
         $booking->setClient($currentUser);
         $booking->setCreatedAt(new \DateTimeImmutable());
         $booking->setUpdatedAt(new \DateTime());
+
+        $requestData = json_decode($request->getContent(), true);
+
+        // Fetch Parking
+        $parkingId = $requestData['parking'] ?? null;
+        if ($parkingId) {
+            $parking = $parkingRepository->findOneBy(['id' => $parkingId]);
+            if (!$parking) {
+                return new JsonResponse(['message' => 'Parking not found'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $booking->setParking($parking);
+        } else {
+            return new JsonResponse(['message' => 'Parking ID is required'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Fetch Price
+        $priceId = $requestData['price'] ?? null;
+        if ($priceId) {
+            $price = $priceRepository->findOneBy(['id' => $priceId]);
+            if (!$price) {
+                return new JsonResponse(['message' => 'Price not found'], JsonResponse::HTTP_BAD_REQUEST);
+            } else if ($price->getParking() !== $parking) {
+                return new JsonResponse(['message' => 'Price does not belong to the selected parking'], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $booking->setPrice($price);
+        } else {
+            return new JsonResponse(['message' => 'Price ID is required'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Handle nested Paiement entity creation
+        $paiementData = $requestData['paiement'] ?? null;
+        if ($paiementData) {
+            $paiement = $serializerInterface->deserialize(json_encode($paiementData), Paiement::class, 'json');
+            $paiement->setCreatedAt(new \DateTimeImmutable());
+            $paiement->setUpdatedAt(new \DateTime());
+            $paiement->setStatus(
+                $statusRepository->findOneBy(['name' => 'Pending'])
+            );
+            $booking->setPaiement($paiement);
+        }
+
         $errors = $validator->validate($booking);
         if ($errors->count() > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
         }
+
+        $booking->setDataStatus(DataStatus::ACTIVE);
+        $booking->setStatus(
+            $statusRepository->findOneBy(['name' => 'Pending'])
+        );
+        $booking->setCreatedAt(new \DateTimeImmutable());
+        $booking->setUpdatedAt(new \DateTime());
         $entityManagerInterface->persist($booking);
         $entityManagerInterface->flush();
         $cache->invalidateTags(["Booking"]);
 
-        $jsonBooking = $serializerInterface->serialize($booking, 'json');
-        $location = $urlGenerator->generate("booking_get", ['id' => $booking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $jsonBooking = $serializerInterface->serialize($booking, 'json', ["groups" => ["booking", "stats", "status", "user"]]);
+        $location = $urlGenerator->generate("api_booking_get", ['id' => $booking->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: [
+        'startDate' => '2025-04-15T10:00:00+00:00',
+        'endDate' => '2025-04-15T12:00:00+00:00',
+    ]))]
     /**
      * Update an existing booking by ID
      *
@@ -113,7 +203,7 @@ final class BookingController extends AbstractController
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
-        if (null === $token || !$currentUser instanceof User || !$this->isGranted('ROLE_ADMIN')) {
+        if (null === $token || !$currentUser instanceof User) {
             return new JsonResponse(['message' => self::UNAUTHORIZED_ACTION], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
@@ -146,12 +236,12 @@ final class BookingController extends AbstractController
         // Soft delete
         $booking->setDataStatus(DataStatus::DELETED);
         $booking->setUpdatedAt(new \DateTime());
-    
+
         $entityManagerInterface->persist($booking);
         $entityManagerInterface->flush();
-    
+
         $cache->invalidateTags(["Booking"]);
-    
+
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
-    }    
+    }
 }

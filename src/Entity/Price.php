@@ -19,11 +19,11 @@ class Price
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["booking", "parking", "user_booking"])]
+    #[Groups(["booking", "parking", "user_booking", "parking_prices"])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(["booking", "parking", "user_booking"])]
+    #[Groups(["booking", "parking", "user_booking", "parking_prices"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('float')]
@@ -32,7 +32,7 @@ class Price
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(["parking", "user_booking"])]
+    #[Groups(["parking", "user_booking", "parking_prices"])]
     #[Assert\NotNull]
     #[Assert\NotBlank]
     #[Assert\Type('\DateInterval')]
@@ -55,7 +55,7 @@ class Price
     private ?Parking $parking = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["booking", "parking", "user_booking"])]
+    #[Groups(["booking", "parking", "user_booking", "parking_prices"])]
     #[Gedmo\Versioned]
     private ?string $currency = null;
 
