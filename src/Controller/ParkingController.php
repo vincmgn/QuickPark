@@ -129,13 +129,14 @@ final class ParkingController extends AbstractController
         return new JsonResponse($jsonParking, JsonResponse::HTTP_CREATED, ['Location' => $location], true);
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Parking::class))]
+    #[OA\Response(response: 404, description: 'Parking not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "Parking name", "isEnabled" => true, "description" => "Parking description", "location" => ["latitude" => 0.0, "longitude" => 0.0]]))]
     /**
      * Edit a parking
      */
-    public function edit(int $id, Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
+    public function update(int $id, Parking $parking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
 
         $data = json_decode($request->getContent(), true);

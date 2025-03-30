@@ -16,6 +16,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/paiement', name: 'api_paiement_')]
@@ -47,12 +48,16 @@ final class PaiementController extends AbstractController
     /**
      * Get a specific paiement by ID
      */
-    public function get(Paiement $paiement, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $paiement = $entityManagerInterface->getRepository(Paiement::class)->find($id);
+        if (!$paiement) {
+            return new JsonResponse(['message' => 'Paiement not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $jsonPaiement = $serializerInterface->serialize($paiement, 'json', [
             'groups' => ['paiement', 'status', 'credit_card']
         ]);
-
         return new JsonResponse($jsonPaiement, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -91,19 +96,23 @@ final class PaiementController extends AbstractController
 
     #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     #[OA\Response(response: 200, description: 'Success', content: new Model(type: Paiement::class))]
-    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["creditCard" => 1, "totalPrice" => 100]))]
+    #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Paiement not found')]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(example: [
+        "creditCardNumber" => "4485237470142195",
+        "totalPrice" => 100
+    ]))]
     /**
      * Update a specific paiement by ID
      */
-    public function update(Request $request, Paiement $paiement, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
+    public function update(int $id, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, ValidatorInterface $validator, TagAwareCacheInterface $cache): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $paiement = $entityManagerInterface->getRepository(Paiement::class)->find($id);
+        if (!$paiement) {
+            return new JsonResponse(['message' => 'Paiement not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
 
-        $paiement->setStatus($data['status']);
-        $paiement->setCreditCard($data['creditCard']);
-        $paiement->setTotalPrice($data['totalPrice']);
-        $paiement->setCreditCardNumber($data['creditCardNumber']);
-
+        $paiement = $serializerInterface->deserialize($request->getContent(), Paiement::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $paiement]);
         $errors = $validator->validate($paiement);
         if (count($errors) > 0) {
             return new JsonResponse($serializerInterface->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
@@ -112,17 +121,22 @@ final class PaiementController extends AbstractController
         $paiement->setUpdatedAt(new \DateTime());
         $entityManagerInterface->flush();
         $cache->invalidateTags(['paiement']);
-
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT, [], false);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Paiement not found')]
     /**
      * Delete a specific paiement by ID
      */
-    public function delete(Paiement $paiement, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $paiement = $entityManagerInterface->getRepository(Paiement::class)->find($id);
+        if (!$paiement) {
+            return new JsonResponse(['message' => 'Paiement not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         // Soft delete
         $paiement->setDataStatus(DataStatus::DELETED);
         $paiement->setUpdatedAt(new \DateTimeImmutable());

@@ -114,6 +114,7 @@ final class PhoneController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Phone not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "+33612345678"]))]
     /**
      * Edit a phone by ID

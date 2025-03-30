@@ -60,8 +60,13 @@ final class BookingController extends AbstractController
     /**
      * Get a specific booking by ID
      */
-    public function get(Booking $booking, SerializerInterface $serializerInterface): JsonResponse
+    public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
+        $booking = $entityManagerInterface->getRepository(Booking::class)->find($id);
+        if (!$booking) {
+            return new JsonResponse(['message' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -188,8 +193,9 @@ final class BookingController extends AbstractController
         return new JsonResponse($jsonBooking, JsonResponse::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Booking not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: [
         'startDate' => '2025-04-15T10:00:00+00:00',
         'endDate' => '2025-04-15T12:00:00+00:00',
@@ -198,8 +204,13 @@ final class BookingController extends AbstractController
      * Update an existing booking by ID
      *
      */
-    public function edit(Booking $booking, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Request $request, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache, ValidatorInterface $validator): JsonResponse
     {
+        $booking = $entityManagerInterface->getRepository(Booking::class)->find($id);
+        if (!$booking) {
+            return new JsonResponse(['message' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();
@@ -221,11 +232,17 @@ final class BookingController extends AbstractController
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Booking not found')]
     /**
      * Delete a specific booking by ID
      */
-    public function delete(Booking $booking, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
+    public function delete(int $id, EntityManagerInterface $entityManagerInterface, TagAwareCacheInterface $cache): JsonResponse
     {
+        $booking = $entityManagerInterface->getRepository(Booking::class)->find($id);
+        if (!$booking) {
+            return new JsonResponse(['message' => 'Booking not found'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
         $currentUser = $token->getUser();

@@ -113,6 +113,7 @@ final class EmailController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Email not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["email" => "test@test.com"]))]
     /**
      * Edit a email by ID

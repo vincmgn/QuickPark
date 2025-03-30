@@ -84,6 +84,7 @@ final class GenderController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Gender not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["name" => "example"]))]
     /**
      * Update an existing gender by ID

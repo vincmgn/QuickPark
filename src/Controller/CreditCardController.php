@@ -59,11 +59,9 @@ final class CreditCardController extends AbstractController
     public function get(int $id, SerializerInterface $serializerInterface, EntityManagerInterface $entityManagerInterface): JsonResponse
     {
         $creditCard = $entityManagerInterface->getRepository(CreditCard::class)->find($id);
-
         if (!$creditCard) {
             return new JsonResponse(['message' => 'CreditCard not found.'], JsonResponse::HTTP_NOT_FOUND);
         }
-
 
         $token = $this->tokenStorage->getToken();
         /** @var ?User $currentUser */
@@ -115,6 +113,7 @@ final class CreditCardController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'CreditCard not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["number" => "4485237470142195", "expirationDate" => "2025-12-31 00:00:00", "owner_name" => "John Doe"]))]
     /**
      * Update a credit card

@@ -126,6 +126,7 @@ final class PriceController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: ['PATCH'])]
     #[OA\Response(response: 204, description: 'No content')]
+    #[OA\Response(response: 404, description: 'Price not found')]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(example: ["price" => 10.5, "duration" => "P1D", "currency" => "EUR", "parking" => 1]))]
     /**
      * Update a price by ID
