@@ -125,44 +125,6 @@ Une fois installé, ouvrez le logiciel et utilisez la configuration suivante :
 - **Mot de passe** : !ChangeMe!  
 
 Et voilà ! Vous avez maintenant accès à la base de données de l'API. Profitez-en ! 🥳
-#### 🧪 Tests
-
-You can also verify the integrity and proper functioning of our routes by running the unit test procedure we have designed for our **API**. To do this, simply go to the container:
-
-```bash
-docker exec -it quickpark-php-1 bash
-```
-
-Then run the following command:
-
-```bash
-php vendor/bin/phpunit tests
-```
-
-#### 💾 Database
-
-To access the database, you must first obtain the port the container is running on:
-
-```bash
-docker port quickpark-database-1  
-```
-
-You should see output similar to this:
-
-```bash
-5432/tcp -> 0.0.0.0:65193
-```
-
-In this example, your database container is running on port **65193**. To view the database, you will need database management software. We recommend **Beekeeper Studio** because it is intuitive and open source. You can download it [here](https://www.beekeeperstudio.io).
-
-Once installed, open the software and use the following configuration:
-
-- **Host**: localhost  
-- **Port**: 65193  
-- **User**: app  
-- **Password**: !ChangeMe!  
-
-That's it! You now have access to the API database. Enjoy! 🥳
 
 ## License
 
