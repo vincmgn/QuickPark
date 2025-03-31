@@ -1,0 +1,84 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: QuickPark_API
+            description: This is the API documentation for QuickPark, a parking management system. It provides endpoints for managing parking spaces, reservations, and user accounts.
+            version: 1.0.0
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                    in: header
+        security:
+            - Bearer: []
+
+        paths:
+            /api/login:
+                post:
+                    tags:
+                        - Login
+                    summary: Login into the api.
+                    requestBody:
+                        content:
+                            application/json:
+                                schema:
+                                    properties:
+                                        username:
+                                            type: string
+                                        password:
+                                            type: string
+                                    type: object
+                    responses:
+                        "200":
+                            description: OK
+                            content:
+                                application/json:
+                                    schema:
+                                        type: object
+                                        properties:
+                                            token:
+                                                type: string
+                                            refresh_token:
+                                                type: string
+                        "401":
+                            description: Invalid credentials
+                        "400":
+                            description: Invalid JSON.
+                    security: []
+
+            /api/refresh_token:
+                post:
+                    tags:
+                        - Login
+                    summary: Login into the api by refresh token.
+                    requestBody:
+                        content:
+                            application/json:
+                                schema:
+                                    properties:
+                                        refresh_token:
+                                            type: string
+                                    type: object
+                    responses:
+                        "200":
+                            description: OK
+                            content:
+                                application/json:
+                                    schema:
+                                        type: object
+                                        properties:
+                                            token:
+                                                type: string
+                                            refresh_token:
+                                                type: string
+                        "401":
+                            description: An authentication exception occurred.
+                    security: []
+
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!(/doc|/doc.json|/token/refresh)$)
+        #host_patterns:
+        #    - ^/api
